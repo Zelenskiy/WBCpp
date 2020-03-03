@@ -9,9 +9,6 @@
 #include "funcs.h"
 //#include <GL/glaux.h>
 #include  <math.h>
-
-#pragma comment (lib, "glaux.lib")
-
 //glEnable(GL_TEXTURE_2D);
 
 float WinWid = 1000.0;
@@ -141,8 +138,6 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
             Draw();
         }
     }
-
-
 }
 
 
@@ -158,8 +153,6 @@ void on_mouse_drag(int ax, int ay) {
                 Y0 = Y;
                 break;
             case 2:                             // Гумка
-                int idErr;
-//                line(X0 , Y0 , X , Y , erWidth, cFon);
                 draw_circle(X0 , Y0 , erWidth, 0.8, 1.0, 0.8);
                 for (figure &f:figures) {
                     border c = f.extrem;

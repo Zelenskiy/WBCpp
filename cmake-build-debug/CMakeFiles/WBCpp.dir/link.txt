@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/WBCpp.dir/main.cpp.o CMakeFiles/WBCpp.dir/funcs.cpp.o  -o WBCpp -lGL -lglut 

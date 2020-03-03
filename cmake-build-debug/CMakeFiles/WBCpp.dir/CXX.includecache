@@ -1,0 +1,32 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/alexandr/Dropbox/CLionProjects/WBCpp/funcs.h
+vector
+-
+
+/home/alexandr/Dropbox/CLionProjects/WBCpp/main.cpp
+stdio.h
+-
+stdlib.h
+-
+iostream
+-
+map
+-
+list
+-
+GL/glut.h
+-
+math.h
+-
+funcs.h
+/home/alexandr/Dropbox/CLionProjects/WBCpp/funcs.h
+math.h
+-
+
