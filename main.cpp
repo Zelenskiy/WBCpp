@@ -91,7 +91,7 @@ void Draw() {
 }
 
 
-void draw_rem_pline(int XX0, int YY0, int XX, int YY, colorAll cAll, float thin) {
+void draw_to_figures(int XX0, int YY0, int XX, int YY, colorAll cAll, float thin) {
     point p;
     figure fig;
     p.x = XX0;
@@ -104,7 +104,6 @@ void draw_rem_pline(int XX0, int YY0, int XX, int YY, colorAll cAll, float thin)
     fig.id = id;
     fig.center.x = (X0 + X) / 2.0;
     fig.center.y = (Y0 + Y) / 2.0;
-
     if (tool==1)
         fig.name = "poly";
     else if (tool==3)
@@ -129,8 +128,7 @@ void Timer(int) {
     Draw();
     glutTimerFunc(50, Timer, 0);
 }
-
-void Initialize() {
+void init_colors(){
     cFon.colorR = 0.6;
     cFon.colorG = 0.8;
     cFon.colorB = 0.4;
@@ -142,6 +140,9 @@ void Initialize() {
     cAll.fonColorG = cFon.colorG;
     cAll.fonColorB = cFon.colorB;
     cAll.fonColorA = 1.0;
+}
+void Initialize() {
+    init_colors();
     glClearColor(cAll.fonColorR, cAll.fonColorG, cAll.fonColorB, cAll.fonColorA);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -150,6 +151,8 @@ void Initialize() {
 
 void on_mouse_down_up(int button, int state, int ax, int ay) {
     if (button == GLUT_LEFT_BUTTON) {
+        old_X0 = 0; old_Y0 = 0; old_X = 0; old_Y = 0;
+
         fig.p.clear();
         if (state == GLUT_DOWN) {
             down = true;
@@ -159,11 +162,12 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
             down = false;
             switch (tool) {
                 case 3:
-                    draw_rem_pline(X0, Y0, X, Y, cAll, penWidth);
+                    draw_to_figures(X0, Y0, X, Y, cAll, penWidth);
                     break;
             }
-            Draw();
+
         }
+        Draw();
     }
 }
 
@@ -174,7 +178,7 @@ void on_mouse_drag(int ax, int ay) {
         Y = WinHei - ay;
         switch (tool) {
             case 1:                             // Ручка
-                draw_rem_pline(X0, Y0, X, Y, cAll, penWidth);
+                draw_to_figures(X0, Y0, X, Y, cAll, penWidth);
                 line(X0, Y0, X, Y, penWidth, cAll);
                 X0 = X;
                 Y0 = Y;

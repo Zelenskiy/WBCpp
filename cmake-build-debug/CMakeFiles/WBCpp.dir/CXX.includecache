@@ -6,9 +6,15 @@
 
 #IncludeRegexTransform: 
 
-/home/alexandr/CLionProjects/WBCpp/buttons.h
+/home/alexandr/CLionProjects/WBCpp/funcs.h
+vector
+-
 
-/home/alexandr/CLionProjects/WBCpp/funcs.cpp
+/home/alexandr/CLionProjects/WBCpp/main.cpp
+stdio.h
+-
+stdlib.h
+-
 iostream
 -
 map
@@ -19,14 +25,8 @@ GL/glut.h
 -
 math.h
 -
-list
--
 funcs.h
 /home/alexandr/CLionProjects/WBCpp/funcs.h
-buttons.h
-/home/alexandr/CLionProjects/WBCpp/buttons.h
-
-/home/alexandr/CLionProjects/WBCpp/funcs.h
-vector
+math.h
 -
 
