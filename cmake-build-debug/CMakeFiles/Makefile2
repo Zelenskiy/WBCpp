@@ -44,10 +44,10 @@ RM = /home/alexandr/clion-2019.2.5/bin/cmake/linux/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/alexandr/Dropbox/CLionProjects/WBCpp
+CMAKE_SOURCE_DIR = /home/alexandr/CLionProjects/WBCpp
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/alexandr/Dropbox/CLionProjects/WBCpp/cmake-build-debug
+CMAKE_BINARY_DIR = /home/alexandr/CLionProjects/WBCpp/cmake-build-debug
 
 #=============================================================================
 # Directory level rules for the build root directory
@@ -74,14 +74,14 @@ preinstall:
 CMakeFiles/WBCpp.dir/all:
 	$(MAKE) -f CMakeFiles/WBCpp.dir/build.make CMakeFiles/WBCpp.dir/depend
 	$(MAKE) -f CMakeFiles/WBCpp.dir/build.make CMakeFiles/WBCpp.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandr/Dropbox/CLionProjects/WBCpp/cmake-build-debug/CMakeFiles --progress-num=1,2,3 "Built target WBCpp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandr/CLionProjects/WBCpp/cmake-build-debug/CMakeFiles --progress-num=1,2,3 "Built target WBCpp"
 .PHONY : CMakeFiles/WBCpp.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/WBCpp.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandr/Dropbox/CLionProjects/WBCpp/cmake-build-debug/CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandr/CLionProjects/WBCpp/cmake-build-debug/CMakeFiles 3
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/WBCpp.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandr/Dropbox/CLionProjects/WBCpp/cmake-build-debug/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandr/CLionProjects/WBCpp/cmake-build-debug/CMakeFiles 0
 .PHONY : CMakeFiles/WBCpp.dir/rule
 
 # Convenience name for target.

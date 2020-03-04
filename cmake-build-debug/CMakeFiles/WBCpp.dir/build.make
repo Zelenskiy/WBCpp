@@ -43,10 +43,10 @@ RM = /home/alexandr/clion-2019.2.5/bin/cmake/linux/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/alexandr/Dropbox/CLionProjects/WBCpp
+CMAKE_SOURCE_DIR = /home/alexandr/CLionProjects/WBCpp
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/alexandr/Dropbox/CLionProjects/WBCpp/cmake-build-debug
+CMAKE_BINARY_DIR = /home/alexandr/CLionProjects/WBCpp/cmake-build-debug
 
 # Include any dependencies generated for this target.
 include CMakeFiles/WBCpp.dir/depend.make
@@ -59,29 +59,29 @@ include CMakeFiles/WBCpp.dir/flags.make
 
 CMakeFiles/WBCpp.dir/main.cpp.o: CMakeFiles/WBCpp.dir/flags.make
 CMakeFiles/WBCpp.dir/main.cpp.o: ../main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandr/Dropbox/CLionProjects/WBCpp/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/WBCpp.dir/main.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/WBCpp.dir/main.cpp.o -c /home/alexandr/Dropbox/CLionProjects/WBCpp/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandr/CLionProjects/WBCpp/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/WBCpp.dir/main.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/WBCpp.dir/main.cpp.o -c /home/alexandr/CLionProjects/WBCpp/main.cpp
 
 CMakeFiles/WBCpp.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/WBCpp.dir/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/alexandr/Dropbox/CLionProjects/WBCpp/main.cpp > CMakeFiles/WBCpp.dir/main.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/alexandr/CLionProjects/WBCpp/main.cpp > CMakeFiles/WBCpp.dir/main.cpp.i
 
 CMakeFiles/WBCpp.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/WBCpp.dir/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/alexandr/Dropbox/CLionProjects/WBCpp/main.cpp -o CMakeFiles/WBCpp.dir/main.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/alexandr/CLionProjects/WBCpp/main.cpp -o CMakeFiles/WBCpp.dir/main.cpp.s
 
 CMakeFiles/WBCpp.dir/funcs.cpp.o: CMakeFiles/WBCpp.dir/flags.make
 CMakeFiles/WBCpp.dir/funcs.cpp.o: ../funcs.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandr/Dropbox/CLionProjects/WBCpp/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/WBCpp.dir/funcs.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/WBCpp.dir/funcs.cpp.o -c /home/alexandr/Dropbox/CLionProjects/WBCpp/funcs.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandr/CLionProjects/WBCpp/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/WBCpp.dir/funcs.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/WBCpp.dir/funcs.cpp.o -c /home/alexandr/CLionProjects/WBCpp/funcs.cpp
 
 CMakeFiles/WBCpp.dir/funcs.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/WBCpp.dir/funcs.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/alexandr/Dropbox/CLionProjects/WBCpp/funcs.cpp > CMakeFiles/WBCpp.dir/funcs.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/alexandr/CLionProjects/WBCpp/funcs.cpp > CMakeFiles/WBCpp.dir/funcs.cpp.i
 
 CMakeFiles/WBCpp.dir/funcs.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/WBCpp.dir/funcs.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/alexandr/Dropbox/CLionProjects/WBCpp/funcs.cpp -o CMakeFiles/WBCpp.dir/funcs.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/alexandr/CLionProjects/WBCpp/funcs.cpp -o CMakeFiles/WBCpp.dir/funcs.cpp.s
 
 # Object files for target WBCpp
 WBCpp_OBJECTS = \
@@ -95,7 +95,7 @@ WBCpp: CMakeFiles/WBCpp.dir/main.cpp.o
 WBCpp: CMakeFiles/WBCpp.dir/funcs.cpp.o
 WBCpp: CMakeFiles/WBCpp.dir/build.make
 WBCpp: CMakeFiles/WBCpp.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/alexandr/Dropbox/CLionProjects/WBCpp/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable WBCpp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/alexandr/CLionProjects/WBCpp/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable WBCpp"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/WBCpp.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -108,6 +108,6 @@ CMakeFiles/WBCpp.dir/clean:
 .PHONY : CMakeFiles/WBCpp.dir/clean
 
 CMakeFiles/WBCpp.dir/depend:
-	cd /home/alexandr/Dropbox/CLionProjects/WBCpp/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/alexandr/Dropbox/CLionProjects/WBCpp /home/alexandr/Dropbox/CLionProjects/WBCpp /home/alexandr/Dropbox/CLionProjects/WBCpp/cmake-build-debug /home/alexandr/Dropbox/CLionProjects/WBCpp/cmake-build-debug /home/alexandr/Dropbox/CLionProjects/WBCpp/cmake-build-debug/CMakeFiles/WBCpp.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/alexandr/CLionProjects/WBCpp/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/alexandr/CLionProjects/WBCpp /home/alexandr/CLionProjects/WBCpp /home/alexandr/CLionProjects/WBCpp/cmake-build-debug /home/alexandr/CLionProjects/WBCpp/cmake-build-debug /home/alexandr/CLionProjects/WBCpp/cmake-build-debug/CMakeFiles/WBCpp.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/WBCpp.dir/depend
 

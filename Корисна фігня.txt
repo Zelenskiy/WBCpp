@@ -1,3 +1,11 @@
 //    Scale = 1.0-abs(sin(3.14*Angle/90.0)/sqrt(3.0)/2);
 //    glScalef(Scale,Scale, 1.0);
 //    glRotatef(Angle,0.0,0.0,1.0);
+
+
+
+sudo apt-get install libsoil-dev
+sudo apt-get install libsfml-dev
+sudo apt-get install libsdl2-2.0
+
+https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_Introduction.html

@@ -4,8 +4,8 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/alexandr/Dropbox/CLionProjects/WBCpp/funcs.cpp" "/home/alexandr/Dropbox/CLionProjects/WBCpp/cmake-build-debug/CMakeFiles/WBCpp.dir/funcs.cpp.o"
-  "/home/alexandr/Dropbox/CLionProjects/WBCpp/main.cpp" "/home/alexandr/Dropbox/CLionProjects/WBCpp/cmake-build-debug/CMakeFiles/WBCpp.dir/main.cpp.o"
+  "/home/alexandr/CLionProjects/WBCpp/funcs.cpp" "/home/alexandr/CLionProjects/WBCpp/cmake-build-debug/CMakeFiles/WBCpp.dir/funcs.cpp.o"
+  "/home/alexandr/CLionProjects/WBCpp/main.cpp" "/home/alexandr/CLionProjects/WBCpp/cmake-build-debug/CMakeFiles/WBCpp.dir/main.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

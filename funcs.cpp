@@ -1,9 +1,13 @@
+#include <iostream>
 #include <map>
 #include <list>
 #include <GL/glut.h>
 #include <math.h>
 #include <list>
 #include "funcs.h"
+//#include <SOIL/SOIL.h>
+//#include <png.h>
+#include "buttons.h"
 
 
 using namespace std;
@@ -60,7 +64,6 @@ border border_polyline(points ps) {
 }
 
 
-
 void draw_circle(float x0, float y0, float r, float cR, float cG, float cB) {
     glColor3f(cR, cG, cB);
     glBegin(GL_TRIANGLE_FAN);
@@ -82,7 +85,7 @@ void draw_circle_fill(float x0, float y0, float r, float cR, float cG, float cB)
 }
 
 
-void draw_poly(list <point> ps, float cR, float cG, float cB, float thin) {
+void draw_poly(list<point> ps, float cR, float cG, float cB, float thin) {
     for (auto p:ps) {
         float x = p.x;
         float y = p.y;
@@ -127,12 +130,40 @@ void line(int x0, int y0, int x1, int y1, float r, colorAll cAll) {
     }
 }
 
-void draw_line(int XX0, int YY0, int XX, int YY, colorAll cAll,int thin) {
-    glColor3f(cAll.colorR,cAll.colorG,cAll.colorB);
+void draw_line(int XX0, int YY0, int XX, int YY, int thin, colorAll cAll) {
+    glColor3f(cAll.colorR, cAll.colorG, cAll.colorB);
     glLineWidth(thin);
     glBegin(GL_LINES);
     glVertex3d(XX0, YY0, 0.0);
     glVertex3d(XX, YY, 0.0);
     glEnd();
+    glFlush();
+}
+
+
+void test_draw() {
+    int width = 32;
+    int height = 32;
+    // (Horizontal) byte array of bitmap of 32 x 32 px:
+
+    glBegin(GL_POINTS);
+    for( int k = 0, n=0; n<3 ;k+=38,n++) {
+        for (int w = 0; w < width; w++) {
+            for (int h = 0; h < height; h++) {
+                glColor3f(tool1_coords[w][h][0], tool1_coords[w][h][1], tool1_coords[w][h][2]);
+                glVertex2d(w + 6 + k, h + 6);
+            }
+        }
+    }
+    int k = 200;
+    for (int w = 0; w < width; w++) {
+        for (int h = 0; h < height; h++) {
+            glColor3f(palitra[w][h][0], palitra[w][h][1], palitra[w][h][2]);
+            glVertex2d(w + 6 + k, h + 6);
+        }
+    }
+
+    glEnd();
+
     glFlush();
 }

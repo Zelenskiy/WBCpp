@@ -9,10 +9,20 @@
 #include "funcs.h"
 //#include <GL/glaux.h>
 #include  <math.h>
+
+
+
+
+
+
+
+
 //glEnable(GL_TEXTURE_2D);
 
-float WinWid = 1000.0;
-float WinHei = 750.0;
+
+
+float WinWid = 1366.0;
+float WinHei = 768.0;
 int window;
 float X;
 float Y;
@@ -25,6 +35,7 @@ int id = 0;
 float Angle = 0.0, Scale = 1.0;
 colorAll cAll;
 colorAll cFon;
+float old_X0; float old_Y0; float old_X; float old_Y;
 
 
 int penWidth = 2;
@@ -45,7 +56,7 @@ void Render() {
     int i = 0;
     for (figure f: figures) {
         if ((f.visible == 1)) {
-            if (f.name == "line") {
+            if (f.name == "poly") {
                 points ps = f.p;
                 float XX0 = ps[0].x;
                 float YY0 = ps[0].y;
@@ -53,6 +64,16 @@ void Render() {
                 float YY = ps[1].y;
                 line(XX0, YY0, XX, YY, f.thickness, f.color);
             } else {
+                if (f.name == "line") {
+                    points ps = f.p;
+                    float XX0 = ps[0].x;
+                    float YY0 = ps[0].y;
+                    float XX = ps[1].x;
+                    float YY = ps[1].y;
+//                    draw_circle_fill(XX0, YY0, f.thickness, f.color.colorR, f.color.colorG, f.color.colorB);
+                    draw_line(XX0, YY0, XX, YY, f.thickness*2, f.color);
+//                    line(XX0, YY0, XX, YY, f.thickness, f.color);
+                }
             }
         }
     glPopMatrix();
@@ -61,8 +82,11 @@ void Render() {
     }
 }
 
+
 void Draw() {
+
     Render();
+    test_draw();
     glFlush();
 }
 
@@ -76,12 +100,15 @@ void draw_rem_pline(int XX0, int YY0, int XX, int YY, colorAll cAll, float thin)
     p.x = XX;
     p.y = YY;
     fig.p.push_back(p);
-
     ++id;
     fig.id = id;
     fig.center.x = (X0 + X) / 2.0;
     fig.center.y = (Y0 + Y) / 2.0;
-    fig.name = "line";
+
+    if (tool==1)
+        fig.name = "poly";
+    else if (tool==3)
+            fig.name = "line";
     fig.fordel = false;
     fig.visible = true;
     fig.color = cAll;
@@ -167,8 +194,12 @@ void on_mouse_drag(int ax, int ay) {
                 Y0 = Y;
                 break;
             case 3:                     //Лінія
-                Draw();
-                draw_line(X0, Y0, X, Y, cAll, penWidth*2);
+//                Draw();
+
+                draw_line(old_X0, old_Y0, old_X, old_Y, penWidth*2, cFon);
+                draw_line(X0, Y0, X, Y, penWidth*2, cAll);
+                old_X0 = X0; old_Y0 = Y0; old_X = X; old_Y = Y;
+
                 break;
         }
     }
@@ -177,7 +208,7 @@ void on_mouse_drag(int ax, int ay) {
     glFlush();
 }
 
-void keyboard(unsigned char key, int x, int y) {
+void on_keypress(unsigned char key, int x, int y) {
     std::cout << (int) key << std::endl;
     switch ((int) key) {   //ESC
         case 27:
@@ -193,6 +224,9 @@ void keyboard(unsigned char key, int x, int y) {
         case 108:
             tool = 3;
             break;
+        case 97:
+            test_draw();
+            break;
         case 127:
             figures.clear();
 //            std::cout << "size " << figures.size() << std::endl;
@@ -206,14 +240,15 @@ int main(int argc, char **argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
     glutInitWindowSize(WinWid, WinHei);
-    glutInitWindowPosition(200, 0);
+    glutInitWindowPosition(0, 0);
     window = glutCreateWindow("Hello OpenGL");
     glutDisplayFunc(Draw);
-    glutKeyboardFunc(keyboard);
+    glutKeyboardFunc(on_keypress);
     glutMouseFunc(on_mouse_down_up);
     glutMotionFunc(on_mouse_drag);
 //    glutTimerFunc(50, Timer, 0);
     Initialize();
+//    glutFullScreen();
     glutMainLoop();
     return 0;
 }

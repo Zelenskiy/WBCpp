@@ -53,9 +53,9 @@ border border_polyline(points ps);
 void draw_circle(float x0, float y0, float r, float cR, float cG, float cB);
 void draw_poly(list <point> ps, float cR, float cG, float cB, float thin);
 void line(int x0, int y0, int x1, int y1, float r, colorAll cAll);
-void draw_line(int XX0, int YY0, int XX, int YY, colorAll cAll,int thin) ;
+void draw_line(int XX0, int YY0, int XX, int YY, int thin, colorAll cAll) ;
 void draw_circle_fill(float x0, float y0, float r, float cR, float cG, float cB);
-
+void test_draw();
 
 
 
