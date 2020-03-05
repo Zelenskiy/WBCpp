@@ -141,29 +141,61 @@ void draw_line(int XX0, int YY0, int XX, int YY, int thin, colorAll cAll) {
 }
 
 
-void test_draw() {
+
+void draw_button(int id_button, colorAll cAll){
     int width = 32;
     int height = 32;
-    // (Horizontal) byte array of bitmap of 32 x 32 px:
+    int k = 0;
+    for (int h = 0; h < height; h++) {
+        for (int w = 0; w < width; w++) {
+            float r = ar[w][h][0];
+            float g = ar[w][h][1];
+            float b = ar[w][h][2];
+            if (r*g*b>0.9){
+                r=cAll.fonColorR;
+                g=cAll.fonColorG;
+                b=cAll.fonColorB;
+            }
+            glColor3f(r,g,b);
+            glVertex2d(w + 6 + k, -h +38);
+        }
+    }
+    k = 35;
+    for (int h = 0; h < height; h++) {
+        for (int w = 0; w < width; w++) {
+            float r = hand[w][h][0];
+            float g = hand[w][h][1];
+            float b = hand[w][h][2];
+            if (r*g*b>0.9){
+                r=cAll.fonColorR;
+                g=cAll.fonColorG;
+                b=cAll.fonColorB;
+            }
+            glColor3f(r,g,b);
+            glVertex2d(w + 6 + k, -h +38);
+        }
+    }
+    k = 70;
+    for (int h = 0; h < height; h++) {
+        for (int w = 0; w < width; w++) {
+            float r = pen[w][h][0];
+            float g = pen[w][h][1];
+            float b = pen[w][h][2];
+            if (r*g*b>0.9){
+                r=cAll.fonColorR;
+                g=cAll.fonColorG;
+                b=cAll.fonColorB;
+            }
+            glColor3f(r,g,b);
+            glVertex2d(w + 6 + k, -h +38);
+        }
+    }
+}
+
+void test_draw(colorAll cAll) {
 
     glBegin(GL_POINTS);
-    for( int k = 0, n=0; n<3 ;k+=38,n++) {
-        for (int w = 0; w < width; w++) {
-            for (int h = 0; h < height; h++) {
-                glColor3f(tool1_coords[w][h][0], tool1_coords[w][h][1], tool1_coords[w][h][2]);
-                glVertex2d(w + 6 + k, h + 6);
-            }
-        }
-    }
-    int k = 200;
-    for (int w = 0; w < width; w++) {
-        for (int h = 0; h < height; h++) {
-            glColor3f(palitra[w][h][0], palitra[w][h][1], palitra[w][h][2]);
-            glVertex2d(w + 6 + k, h + 6);
-        }
-    }
-
+    draw_button(0, cAll);
     glEnd();
-
-    glFlush();
+//    glFlush();
 }

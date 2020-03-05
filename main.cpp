@@ -38,7 +38,7 @@ colorAll cFon;
 float old_X0; float old_Y0; float old_X; float old_Y;
 
 
-int penWidth = 2;
+int penWidth = 4;
 int tool = 1;
 float erWidth = 10;
 
@@ -52,7 +52,7 @@ void Render() {
     glClearDepth(1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glColor3f(cAll.colorR, cAll.colorG, cAll.colorB);
-    glPushMatrix();
+//    glPushMatrix();
     int i = 0;
     for (figure f: figures) {
         if ((f.visible == 1)) {
@@ -76,7 +76,7 @@ void Render() {
                 }
             }
         }
-    glPopMatrix();
+//    glPopMatrix();
 
 
     }
@@ -86,7 +86,7 @@ void Render() {
 void Draw() {
 
     Render();
-    test_draw();
+    test_draw(cAll);
     glFlush();
 }
 
@@ -133,9 +133,9 @@ void init_colors(){
     cFon.colorG = 0.8;
     cFon.colorB = 0.4;
 
-    cAll.colorR = 0.0;
+    cAll.colorR = 0.2;
     cAll.colorG = 0.5;
-    cAll.colorB = 0.2;
+    cAll.colorB = 0.9;
     cAll.fonColorR = cFon.colorR;
     cAll.fonColorG = cFon.colorG;
     cAll.fonColorB = cFon.colorB;
@@ -157,7 +157,7 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
         if (state == GLUT_DOWN) {
             down = true;
             X0 = ax;
-            Y0 = WinHei - ay;
+            Y0 = WinHei - ay-40;
         } else {
             down = false;
             switch (tool) {
@@ -167,7 +167,8 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
             }
 
         }
-        Draw();
+        if (tool>1)
+            Draw();
     }
 }
 
@@ -175,7 +176,7 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
 void on_mouse_drag(int ax, int ay) {
     if (down) {//                Draw();
         X = ax;
-        Y = WinHei - ay;
+        Y = WinHei - ay-40;
         switch (tool) {
             case 1:                             // Ручка
                 draw_to_figures(X0, Y0, X, Y, cAll, penWidth);
@@ -229,7 +230,7 @@ void on_keypress(unsigned char key, int x, int y) {
             tool = 3;
             break;
         case 97:
-            test_draw();
+            test_draw(cAll);
             break;
         case 127:
             figures.clear();
