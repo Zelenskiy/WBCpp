@@ -190,11 +190,58 @@ void draw_button(int id_button, colorAll cAll){
             glVertex2d(w + 6 + k, -h +38);
         }
     }
+    k = 105;
+    for (int h = 0; h < height; h++) {
+        for (int w = 0; w < width; w++) {
+            float r = err[w][h][0];
+            float g = err[w][h][1];
+            float b = err[w][h][2];
+            if (r*g*b>0.9){
+                r=cAll.fonColorR;
+                g=cAll.fonColorG;
+                b=cAll.fonColorB;
+            }
+            glColor3f(r,g,b);
+            glVertex2d(w + 6 + k, -h +38);
+        }
+    }
 }
 
-void test_draw(colorAll cAll) {
 
+typedef struct buttons_t{
+    int id;
+    string name;
+    float* btn;
+}  ;
+buttons_t button[3];
+
+void aaa(){
+    button[0].id = 1;
+    button[0].btn = (float *) ar;
+    button[1].id = 2;
+    button[1].btn = (float *) hand;
+}
+
+//void draw_but(){
+//    int width = 32;
+//    int height = 32;
+//    int k = 0;
+//    for (int k=0;k<3;k++) {
+//        for (int h = 0; h < height; h++) {
+//            for (int w = 0; w < width; w++) {
+//                float r = button[k].btn
+//                float b = ar[w][h][2];
+//                glColor3f(r, g, b);
+//                glVertex2d(w + 6 + k, -h + 38);
+//            }
+//        }
+//    }
+//}
+
+void test_draw(colorAll cAll) {
+//    aaa();
     glBegin(GL_POINTS);
+//    draw_but();
     draw_button(0, cAll);
     glEnd();
 //    glFlush();

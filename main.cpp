@@ -144,20 +144,44 @@ void init_colors(){
 void Initialize() {
     init_colors();
     glClearColor(cAll.fonColorR, cAll.fonColorG, cAll.fonColorB, cAll.fonColorA);
-    glMatrixMode(GL_PROJECTION);
+    glMatrixMode(GL_MATRIX_MODE);
     glLoadIdentity();
-    glOrtho(0, WinWid, 0, WinHei, -5.0, 5.0);
+    glOrtho(0, WinWid, 0, WinHei-60, -1,1);
 }
 
-void on_mouse_down_up(int button, int state, int ax, int ay) {
-    if (button == GLUT_LEFT_BUTTON) {
-        old_X0 = 0; old_Y0 = 0; old_X = 0; old_Y = 0;
+float m_s(float y){
+    return  WinHei - y - 60;
+}
 
+
+void on_mouse_down_up(int button, int state, int ax, int ay) {
+//    cout<<"("<<ax<<","<<ay<<")"<<endl;
+    if (button == GLUT_LEFT_BUTTON) {
+
+        old_X0 = 0; old_Y0 = 0; old_X = 0; old_Y = 0;
         fig.p.clear();
         if (state == GLUT_DOWN) {
             down = true;
             X0 = ax;
-            Y0 = WinHei - ay-40;
+            Y0 = m_s(ay);
+            // --- check buttons --------
+            if ((Y0>2)&&(Y0<34)&&(X0>2)&&(X0<34)){
+                tool = 8;
+                cout<<"tool="<<tool<<endl;
+            } else if ((Y0>2)&&(Y0<34)&&(X0>36)&&(X0<68)){
+                tool = 20;
+                cout<<"tool="<<tool<<endl;
+            } else if ((Y0>2)&&(Y0<34)&&(X0>70)&&(X0<102)){
+                tool = 1;
+                cout<<"tool="<<tool<<endl;
+
+            } else if ((Y0>2)&&(Y0<34)&&(X0>104)&&(X0<136)){
+                tool = 2;
+                cout<<"tool="<<tool<<endl;
+            }
+
+
+            // ----------------
         } else {
             down = false;
             switch (tool) {
@@ -165,7 +189,6 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
                     draw_to_figures(X0, Y0, X, Y, cAll, penWidth);
                     break;
             }
-
         }
         if (tool>1)
             Draw();
@@ -176,7 +199,7 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
 void on_mouse_drag(int ax, int ay) {
     if (down) {//                Draw();
         X = ax;
-        Y = WinHei - ay-40;
+        Y = m_s(ay);
         switch (tool) {
             case 1:                             // Ручка
                 draw_to_figures(X0, Y0, X, Y, cAll, penWidth);
@@ -214,7 +237,7 @@ void on_mouse_drag(int ax, int ay) {
 }
 
 void on_keypress(unsigned char key, int x, int y) {
-    std::cout << (int) key << std::endl;
+//    std::cout << (int) key << std::endl;
     switch ((int) key) {   //ESC
         case 27:
             std::cout << "ESC" << std::endl;
@@ -244,7 +267,7 @@ void on_keypress(unsigned char key, int x, int y) {
 int main(int argc, char **argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-    glutInitWindowSize(WinWid, WinHei);
+    glutInitWindowSize(WinWid, WinHei-40);
     glutInitWindowPosition(0, 0);
     window = glutCreateWindow("Hello OpenGL");
     glutDisplayFunc(Draw);
