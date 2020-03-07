@@ -17,6 +17,7 @@
 
 
 
+
 //glEnable(GL_TEXTURE_2D);
 
 
@@ -24,6 +25,8 @@
 float WinWid = 1366.0;
 float WinHei = 768.0;
 int window;
+float cx=0;
+float cy=0;
 float X;
 float Y;
 float X0;
@@ -37,6 +40,7 @@ colorAll cAll;
 colorAll cFon;
 float old_X0; float old_Y0; float old_X; float old_Y;
 
+AUX_RGBImageRec *image;
 
 int penWidth = 4;
 int tool = 1;
@@ -62,7 +66,7 @@ void Render() {
                 float YY0 = ps[0].y;
                 float XX = ps[1].x;
                 float YY = ps[1].y;
-                line(XX0, YY0, XX, YY, f.thickness, f.color);
+                line(XX0-cx, YY0-cy, XX-cx, YY-cy, f.thickness, f.color);
             } else {
                 if (f.name == "line") {
                     points ps = f.p;
@@ -71,7 +75,7 @@ void Render() {
                     float XX = ps[1].x;
                     float YY = ps[1].y;
 //                    draw_circle_fill(XX0, YY0, f.thickness, f.color.colorR, f.color.colorG, f.color.colorB);
-                    draw_line(XX0, YY0, XX, YY, f.thickness*2, f.color);
+                    draw_line(XX0-cx, YY0-cy, XX-cx, YY-cy, f.thickness*2, f.color);
 //                    line(XX0, YY0, XX, YY, f.thickness, f.color);
                 }
             }
@@ -86,7 +90,7 @@ void Render() {
 void Draw() {
 
     Render();
-    test_draw(cAll);
+    draw_buttons(cAll);
     glFlush();
 }
 
@@ -94,16 +98,16 @@ void Draw() {
 void draw_to_figures(int XX0, int YY0, int XX, int YY, colorAll cAll, float thin) {
     point p;
     figure fig;
-    p.x = XX0;
-    p.y = YY0;
+    p.x = XX0 + cx;
+    p.y = YY0 + cy;
     fig.p.push_back(p);
-    p.x = XX;
-    p.y = YY;
+    p.x = XX + cx;
+    p.y = YY + cy;
     fig.p.push_back(p);
     ++id;
     fig.id = id;
-    fig.center.x = (X0 + X) / 2.0;
-    fig.center.y = (Y0 + Y) / 2.0;
+    fig.center.x = (X0 + X) / 2.0 + cx;
+    fig.center.y = (Y0 + Y) / 2.0 + cy;
     if (tool==1)
         fig.name = "poly";
     else if (tool==3)
@@ -141,8 +145,11 @@ void init_colors(){
     cAll.fonColorB = cFon.colorB;
     cAll.fonColorA = 1.0;
 }
+
+
 void Initialize() {
     init_colors();
+    init_buttons(cAll);
     glClearColor(cAll.fonColorR, cAll.fonColorG, cAll.fonColorB, cAll.fonColorA);
     glMatrixMode(GL_MATRIX_MODE);
     glLoadIdentity();
@@ -155,44 +162,45 @@ float m_s(float y){
 
 
 void on_mouse_down_up(int button, int state, int ax, int ay) {
-//    cout<<"("<<ax<<","<<ay<<")"<<endl;
-    if (button == GLUT_LEFT_BUTTON) {
-
-        old_X0 = 0; old_Y0 = 0; old_X = 0; old_Y = 0;
-        fig.p.clear();
-        if (state == GLUT_DOWN) {
-            down = true;
-            X0 = ax;
-            Y0 = m_s(ay);
-            // --- check buttons --------
-            if ((Y0>2)&&(Y0<34)&&(X0>2)&&(X0<34)){
-                tool = 8;
-                cout<<"tool="<<tool<<endl;
-            } else if ((Y0>2)&&(Y0<34)&&(X0>36)&&(X0<68)){
-                tool = 20;
-                cout<<"tool="<<tool<<endl;
-            } else if ((Y0>2)&&(Y0<34)&&(X0>70)&&(X0<102)){
-                tool = 1;
-                cout<<"tool="<<tool<<endl;
-
-            } else if ((Y0>2)&&(Y0<34)&&(X0>104)&&(X0<136)){
-                tool = 2;
-                cout<<"tool="<<tool<<endl;
-            }
-
-
-            // ----------------
-        } else {
-            down = false;
-            switch (tool) {
-                case 3:
-                    draw_to_figures(X0, Y0, X, Y, cAll, penWidth);
-                    break;
-            }
+    if (m_s(ay)<35) {
+        // --- check buttons --------
+        int t = check_buttons(ax, m_s(ay));
+        if (t != 0) {
+            tool = t;
         }
-        if (tool>1)
-            Draw();
+    } else {
+        // -------------------------
+
+        if (button == GLUT_LEFT_BUTTON) {
+            old_X0 = 0;
+            old_Y0 = 0;
+            old_X = 0;
+            old_Y = 0;
+            fig.p.clear();
+            if (state == GLUT_DOWN) {
+                down = true;
+                X0 = ax;
+                Y0 = m_s(ay);
+            } else {    // GLUT_UP
+
+                down = false;
+                switch (tool) {
+                    case 3:
+                        draw_to_figures(X0, Y0, X, Y, cAll, penWidth);
+                        break;
+                }
+            }
+            if (tool > 1)
+                Draw();
+
+        } else if (button == 3) { //scrolling
+            cy += 1;
+        } else if (button == 4) { //scrolling
+            cy -= 1;
+        }
+        glutPostRedisplay();
     }
+
 }
 
 
@@ -211,7 +219,7 @@ void on_mouse_drag(int ax, int ay) {
                 draw_circle(X0 , Y0 , erWidth, 0.8, 1.0, 0.8);
                 for (figure &f:figures) {
                     border c = f.extrem;
-                    if ((abs(X - f.center.x) < erWidth) && (abs(Y - f.center.y) < erWidth)) {
+                    if ((abs(X+cx - f.center.x) < erWidth) && (abs(Y +cy- f.center.y) < erWidth)) {
                         f.fordel = true;
                         f.visible = false;
                         break;
@@ -223,11 +231,14 @@ void on_mouse_drag(int ax, int ay) {
                 break;
             case 3:                     //Лінія
 //                Draw();
-
                 draw_line(old_X0, old_Y0, old_X, old_Y, penWidth*2, cFon);
                 draw_line(X0, Y0, X, Y, penWidth*2, cAll);
                 old_X0 = X0; old_Y0 = Y0; old_X = X; old_Y = Y;
-
+                break;
+            case 20:
+                cx += (X0-X)*0.03;
+                cy += (Y0-Y)*0.03;
+                glutPostRedisplay();
                 break;
         }
     }
@@ -237,7 +248,7 @@ void on_mouse_drag(int ax, int ay) {
 }
 
 void on_keypress(unsigned char key, int x, int y) {
-//    std::cout << (int) key << std::endl;
+    std::cout << (int) key << std::endl;
     switch ((int) key) {   //ESC
         case 27:
             std::cout << "ESC" << std::endl;
@@ -263,6 +274,29 @@ void on_keypress(unsigned char key, int x, int y) {
     }
 }
 
+void keySpecialUp(int key, int x, int y){
+    cout<<"key "<<key<<endl;
+    switch (key) {   //UP
+        case 101:
+            cy += 100;
+            break;
+        case 103: //LEFT
+            cy -= 100;
+            break;
+        case 100:
+            cx -= 100;
+            break;
+        case 102: //RIGHT
+            cx += 100;
+            break;
+    }
+    Draw();
+}
+
+void mouseWheel(){
+
+}
+
 
 int main(int argc, char **argv) {
     glutInit(&argc, argv);
@@ -272,10 +306,13 @@ int main(int argc, char **argv) {
     window = glutCreateWindow("Hello OpenGL");
     glutDisplayFunc(Draw);
     glutKeyboardFunc(on_keypress);
+    glutSpecialUpFunc(keySpecialUp);
     glutMouseFunc(on_mouse_down_up);
     glutMotionFunc(on_mouse_drag);
+
 //    glutTimerFunc(50, Timer, 0);
     Initialize();
+//    image = auxDIBImageLoad("photo.bmp")
 //    glutFullScreen();
     glutMainLoop();
     return 0;

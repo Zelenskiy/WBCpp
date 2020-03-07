@@ -74,15 +74,6 @@ void draw_circle(float x0, float y0, float r, float cR, float cG, float cB) {
     glEnd();
 }
 
-void draw_circle_fill(float x0, float y0, float r, float cR, float cG, float cB) {
-//    glColor3f(cR, cG, cB);
-    glBegin(GL_LINE_STRIP);
-    for (int i = 0; i < 50; i++) {
-        float a = (float) i / 50.0f * 3.1415f * 2.0f;
-        glVertex2f(cos(a) * r + x0, sin(a) * r + y0);
-    }
-    glEnd();
-}
 
 
 void draw_poly(list<point> ps, float cR, float cG, float cB, float thin) {
@@ -92,8 +83,6 @@ void draw_poly(list<point> ps, float cR, float cG, float cB, float thin) {
         float r = thin / 2;
         draw_circle(x, y, r, cR, cG, cB);
     }
-
-
 }
 
 
@@ -142,107 +131,91 @@ void draw_line(int XX0, int YY0, int XX, int YY, int thin, colorAll cAll) {
 
 
 
-void draw_button(int id_button, colorAll cAll){
-    int width = 32;
-    int height = 32;
-    int k = 0;
-    for (int h = 0; h < height; h++) {
-        for (int w = 0; w < width; w++) {
-            float r = ar[w][h][0];
-            float g = ar[w][h][1];
-            float b = ar[w][h][2];
-            if (r*g*b>0.9){
-                r=cAll.fonColorR;
-                g=cAll.fonColorG;
-                b=cAll.fonColorB;
-            }
-            glColor3f(r,g,b);
-            glVertex2d(w + 6 + k, -h +38);
-        }
-    }
-    k = 35;
-    for (int h = 0; h < height; h++) {
-        for (int w = 0; w < width; w++) {
-            float r = hand[w][h][0];
-            float g = hand[w][h][1];
-            float b = hand[w][h][2];
-            if (r*g*b>0.9){
-                r=cAll.fonColorR;
-                g=cAll.fonColorG;
-                b=cAll.fonColorB;
-            }
-            glColor3f(r,g,b);
-            glVertex2d(w + 6 + k, -h +38);
-        }
-    }
-    k = 70;
-    for (int h = 0; h < height; h++) {
-        for (int w = 0; w < width; w++) {
-            float r = pen[w][h][0];
-            float g = pen[w][h][1];
-            float b = pen[w][h][2];
-            if (r*g*b>0.9){
-                r=cAll.fonColorR;
-                g=cAll.fonColorG;
-                b=cAll.fonColorB;
-            }
-            glColor3f(r,g,b);
-            glVertex2d(w + 6 + k, -h +38);
-        }
-    }
-    k = 105;
-    for (int h = 0; h < height; h++) {
-        for (int w = 0; w < width; w++) {
-            float r = err[w][h][0];
-            float g = err[w][h][1];
-            float b = err[w][h][2];
-            if (r*g*b>0.9){
-                r=cAll.fonColorR;
-                g=cAll.fonColorG;
-                b=cAll.fonColorB;
-            }
-            glColor3f(r,g,b);
-            glVertex2d(w + 6 + k, -h +38);
-        }
-    }
-}
-
-
-typedef struct buttons_t{
-    int id;
-    string name;
-    float* btn;
-}  ;
-buttons_t button[3];
-
-void aaa(){
-    button[0].id = 1;
-    button[0].btn = (float *) ar;
-    button[1].id = 2;
-    button[1].btn = (float *) hand;
-}
-
-//void draw_but(){
-//    int width = 32;
-//    int height = 32;
-//    int k = 0;
-//    for (int k=0;k<3;k++) {
-//        for (int h = 0; h < height; h++) {
-//            for (int w = 0; w < width; w++) {
-//                float r = button[k].btn
-//                float b = ar[w][h][2];
-//                glColor3f(r, g, b);
-//                glVertex2d(w + 6 + k, -h + 38);
-//            }
-//        }
-//    }
-//}
-
 void test_draw(colorAll cAll) {
-//    aaa();
-    glBegin(GL_POINTS);
-//    draw_but();
-    draw_button(0, cAll);
-    glEnd();
-//    glFlush();
+    init_buttons(cAll);
 }
+
+
+
+string button_name [BUTTONS_COUNT] = {"ar", "hand", "pen", "er", "line"};
+int button_index [BUTTONS_COUNT] = {8, 20, 1, 2, 3};
+
+void draw_but(int i, float x0,float y0, colorAll cAll){
+    float r,g,b;
+    float w=32;
+    float h = 32;
+//    for (int y = 0; y < h; y++) {
+    for (int y = h-1; y >= 0; y--) {
+        for (int x = 0; x < w; x++) {
+            switch (i){
+                case 0:
+                    r = ar[x][y][0];
+                    g = ar[x][y][1];
+                    b = ar[x][y][2];
+                    break;
+                case 1:
+                    r = hand[x][y][0];
+                    g = hand[x][y][1];
+                    b = hand[x][y][2];
+                    break;
+                case 2:
+                    r = pen[x][y][0];
+                    g = pen[x][y][1];
+                    b = pen[x][y][2];
+                    break;
+                case 3:
+                    r = err[x][y][0];
+                    g = err[x][y][1];
+                    b = err[x][y][2];
+                    break;
+                case 4:
+                    r = lineFig[x][y][0];
+                    g = lineFig[x][y][1];
+                    b = lineFig[x][y][2];
+                    break;
+            }
+            if (r*g*b>0.9){
+                r=cAll.fonColorR;
+                g=cAll.fonColorG;
+                b=cAll.fonColorB;
+            }
+            glColor3f(r,g,b);
+
+            glVertex2d(x+x0, y+y0);
+
+        }
+    }
+}
+int check_buttons(float x0, float y0){
+    for (int i=0; i < BUTTONS_COUNT; i++) {
+        if ((x0 > buttons[i].x0) && (x0 < buttons[i].x0 + buttons[i].w) &&
+            (y0 > buttons[i].y0) && (y0 < buttons[i].y0 + buttons[i].h)) {
+            return buttons[i].tool;
+        }
+    }
+    return 0;
+}
+
+void draw_buttons(colorAll cAll){
+    glBegin(GL_POINTS);
+    for (int i=0; i < BUTTONS_COUNT; i++){
+        draw_but(i,buttons[i].x0,buttons[i].y0, cAll);
+    }
+    glEnd();
+}
+
+void init_buttons(colorAll cAll){
+    float k = 4;
+    for (int i=0; i < BUTTONS_COUNT; i++){
+        buttons[i].tool = button_index[i];
+        buttons[i].x0 = k;
+        buttons[i].y0 = 4;
+        buttons[i].w = 32;
+        buttons[i].h = 32;
+        buttons[i].align = "left";
+        buttons[i].name = button_name[i];
+        k+=36;
+    }
+    draw_buttons(cAll);
+}
+
