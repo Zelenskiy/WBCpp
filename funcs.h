@@ -56,13 +56,14 @@ void fig_empty(figure);
 border border_polyline(points ps);
 void draw_circle(float x0, float y0, float r, float cR, float cG, float cB);
 void draw_poly(list <point> ps, float cR, float cG, float cB, float thin);
-void line(int x0, int y0, int x1, int y1, float r, colorAll cAll);
-void draw_line(int XX0, int YY0, int XX, int YY, int thin, colorAll cAll) ;
+void line(float x0, float y0, float x1, float y1, float r, colorAll cAll);
+void draw_line(float XX0, float YY0, float XX, float YY, int thin, colorAll cAll) ;
 void draw_circle_fill(float x0, float y0, float r, float cR, float cG, float cB);
 void test_draw(colorAll cAll);
 void init_buttons(colorAll cAll);
 int check_buttons(float x0, float y0);
 void draw_buttons(colorAll cAll);
+void insert_screenshot();
 
 
 

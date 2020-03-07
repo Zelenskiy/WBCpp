@@ -4,6 +4,7 @@
 #include <GL/glut.h>
 #include <math.h>
 #include <list>
+#include <fstream>
 #include "funcs.h"
 //#include <SOIL/SOIL.h>
 //#include <png.h>
@@ -86,7 +87,7 @@ void draw_poly(list<point> ps, float cR, float cG, float cB, float thin) {
 }
 
 
-void line(int x0, int y0, int x1, int y1, float r, colorAll cAll) {
+void line(float x0, float y0, float x1, float y1, float r, colorAll cAll) {
     int dx = abs(x1 - x0);
     int dy = abs(y1 - y0);
     int sx = x1 >= x0 ? 1 : -1;
@@ -119,7 +120,7 @@ void line(int x0, int y0, int x1, int y1, float r, colorAll cAll) {
     }
 }
 
-void draw_line(int XX0, int YY0, int XX, int YY, int thin, colorAll cAll) {
+void draw_line(float XX0, float YY0, float XX, float YY, int thin, colorAll cAll) {
     glColor3f(cAll.colorR, cAll.colorG, cAll.colorB);
     glLineWidth(thin);
     glBegin(GL_LINES);
@@ -219,3 +220,35 @@ void init_buttons(colorAll cAll){
     draw_buttons(cAll);
 }
 
+
+typedef struct color_t {
+    int r;
+    int g;
+    int b;
+} color_t;
+
+vector <color_t> texture;
+
+void insert_screenshot(){
+    int w,h;
+    int32_t pix;
+    std::ifstream fin("tmp.txt"); // окрываем файл для чтения
+    if (fin.is_open())
+    {
+        fin>>w;
+        fin>>h;
+        for (int i=0; i<h*w;i++){
+                fin>>pix;
+                color_t c;
+                c.r = pix/65536;
+                c.g = (pix % 65536)/256;
+                c.b = pix % 256;
+            cout<<"r="<<c.r<<" g="<<c.g<<" b="<<c.b<<endl;
+                texture.push_back(c);
+
+        }
+
+        cout<<"("<<w<<", "<<h<<")"<<endl;
+    }
+    fin.close();     // закрываем файл
+}

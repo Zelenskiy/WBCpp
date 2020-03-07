@@ -10,18 +10,6 @@
 //#include <GL/glaux.h>
 #include  <math.h>
 
-
-
-
-
-
-
-
-
-//glEnable(GL_TEXTURE_2D);
-
-
-
 float WinWid = 1366.0;
 float WinHei = 768.0;
 int window;
@@ -265,6 +253,9 @@ void on_keypress(unsigned char key, int x, int y) {
             break;
         case 97:
             test_draw(cAll);
+            break;
+        case 115:   //S
+            insert_screenshot();
             break;
         case 127:
             figures.clear();
