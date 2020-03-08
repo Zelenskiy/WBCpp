@@ -7,14 +7,16 @@
 #include <GL/glut.h>
 #include <math.h>
 #include "funcs.h"
-//#include <GL/glaux.h>
-#include  <math.h>
+#include <fstream>
 
-float WinWid = 1366.0;
-float WinHei = 768.0;
+
+float WinWid = 800.0;
+float WinHei = 600.0;
+//float WinWid = 1366.0;
+//float WinHei = 768.0;
 int window;
-float cx=0;
-float cy=0;
+float cx = 0;
+float cy = 0;
 float X;
 float Y;
 float X0;
@@ -26,18 +28,44 @@ int id = 0;
 float Angle = 0.0, Scale = 1.0;
 colorAll cAll;
 colorAll cFon;
-float old_X0; float old_Y0; float old_X; float old_Y;
+float old_X0;
+float old_Y0;
+float old_X;
+float old_Y;
 
-AUX_RGBImageRec *image;
+std::vector<color_t> texture;
 
 int penWidth = 4;
 int tool = 1;
 float erWidth = 10;
 
 
-list<figure> figures;
+std::list<figure> figures;
 point p;
 figure fig;
+
+int insert_screenshot();
+
+void close_app();
+//
+//static unsigned short read_u16(FILE *fp);
+//
+//static unsigned int read_u32(FILE *fp);
+//
+//static int read_s32(FILE *fp);
+
+
+void figures_is_visible() {
+    for (auto &f: figures) {
+        if ((f.extrem.xmax - cx > 0) && (f.extrem.xmin - cx < WinWid) &&
+            (f.extrem.ymax - cy > 0) && (f.extrem.ymin - cy < WinHei)) {
+            f.visible = 1;
+        } else {
+            f.visible = 0;
+        }
+    }
+}
+
 
 void Render() {
     glClearColor(0.6, 0.8, 0.4, 1.0);
@@ -54,7 +82,7 @@ void Render() {
                 float YY0 = ps[0].y;
                 float XX = ps[1].x;
                 float YY = ps[1].y;
-                line(XX0-cx, YY0-cy, XX-cx, YY-cy, f.thickness, f.color);
+                line(XX0 - cx, YY0 - cy, XX - cx, YY - cy, f.thickness, f.color);
             } else {
                 if (f.name == "line") {
                     points ps = f.p;
@@ -63,7 +91,8 @@ void Render() {
                     float XX = ps[1].x;
                     float YY = ps[1].y;
 //                    draw_circle_fill(XX0, YY0, f.thickness, f.color.colorR, f.color.colorG, f.color.colorB);
-                    draw_line(XX0-cx, YY0-cy, XX-cx, YY-cy, f.thickness*2, f.color);
+                    line(XX0 - cx, YY0 - cy, XX - cx, YY - cy, f.thickness, f.color);
+//                    draw_line(XX0 - cx, YY0 - cy, XX - cx, YY - cy, f.thickness * 2, f.color);
 //                    line(XX0, YY0, XX, YY, f.thickness, f.color);
                 }
             }
@@ -74,10 +103,28 @@ void Render() {
     }
 }
 
+void draw_pictures() {
+    glBegin(GL_POINTS);
+    for (auto i = texture.begin(); i != texture.end(); ++i) {
+        color_t c = *i;
+        glColor3f(c.b, c.g, c.r);
+        if ((c.x - cx > 0) && (c.x - cx < WinWid) &&
+            (c.y - cy > 0) && (c.y - cy < WinHei)) {
+            glVertex2d(c.x - cx, c.y - cy);
+        } else {
+
+        }
+//        glVertex2d(c.x - cx, c.y - cy);
+
+    }
+    glEnd();
+}
+
 
 void Draw() {
 
     Render();
+    draw_pictures();
     draw_buttons(cAll);
     glFlush();
 }
@@ -96,10 +143,10 @@ void draw_to_figures(int XX0, int YY0, int XX, int YY, colorAll cAll, float thin
     fig.id = id;
     fig.center.x = (X0 + X) / 2.0 + cx;
     fig.center.y = (Y0 + Y) / 2.0 + cy;
-    if (tool==1)
+    if (tool == 1)
         fig.name = "poly";
-    else if (tool==3)
-            fig.name = "line";
+    else if (tool == 3)
+        fig.name = "line";
     fig.fordel = false;
     fig.visible = true;
     fig.color = cAll;
@@ -109,7 +156,7 @@ void draw_to_figures(int XX0, int YY0, int XX, int YY, colorAll cAll, float thin
 }
 
 void figures_update() {
-    list<figure> tmpList;
+//    std::list<figure> tmpList;
     figures.remove_if([](figure n) { return n.fordel == true; });
 
 }
@@ -117,10 +164,24 @@ void figures_update() {
 void Timer(int) {
 //    ++Angle;
 //    glutPostRedisplay();
-    Draw();
-    glutTimerFunc(50, Timer, 0);
+//    Draw();
+    std::cout << "TIMER" << std::endl;
+    std::ifstream file;
+    file.open("file.bmp");
+    file.close();
+    if (file) {
+        glutFullScreen();
+        glutReshapeWindow(WinWid, WinHei - 60);
+        glutShowWindow();
+        insert_screenshot();
+//        glutShowWindow();
+    }
+
+
+    glutTimerFunc(2000, Timer, 0);
 }
-void init_colors(){
+
+void init_colors() {
     cFon.colorR = 0.6;
     cFon.colorG = 0.8;
     cFon.colorB = 0.4;
@@ -134,27 +195,47 @@ void init_colors(){
     cAll.fonColorA = 1.0;
 }
 
+void init_flags() {
+    std::ofstream fout("is_work.txt");
+    fout << "Hello. I work!" << std::endl;
+    fout.close();
+}
 
 void Initialize() {
+
+    init_flags();
     init_colors();
     init_buttons(cAll);
     glClearColor(cAll.fonColorR, cAll.fonColorG, cAll.fonColorB, cAll.fonColorA);
     glMatrixMode(GL_MATRIX_MODE);
     glLoadIdentity();
-    glOrtho(0, WinWid, 0, WinHei-60, -1,1);
+    glOrtho(0, WinWid, 0, WinHei - 60, -1, 1);
+
+//    FILE* f;
+//    char buf[128];
+//    f = popen("../ScreenShoot/scrgrub","r");
+//    while (fgets(buf,127,f))
+//    {
+//        printf("%s\n",buf);
+//    }
+//    fclose(f);
 }
 
-float m_s(float y){
-    return  WinHei - y - 60;
+float m_s(float y) {
+    return WinHei - y - 60;
 }
 
 
 void on_mouse_down_up(int button, int state, int ax, int ay) {
-    if (m_s(ay)<35) {
+    if (m_s(ay) < 35) {
         // --- check buttons --------
         int t = check_buttons(ax, m_s(ay));
-        if (t != 0) {
+        if (t > 0) {
             tool = t;
+        } else if (t == -1) { //Згортаємо
+            glutIconifyWindow();
+        } else if (t == -2) { //Згортаємо
+            close_app();
         }
     } else {
         // -------------------------
@@ -164,19 +245,19 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
             old_Y0 = 0;
             old_X = 0;
             old_Y = 0;
-            fig.p.clear();
+//            fig.p.clear();
             if (state == GLUT_DOWN) {
                 down = true;
                 X0 = ax;
                 Y0 = m_s(ay);
             } else {    // GLUT_UP
-
                 down = false;
                 switch (tool) {
                     case 3:
                         draw_to_figures(X0, Y0, X, Y, cAll, penWidth);
                         break;
                 }
+                figures_is_visible();
             }
             if (tool > 1)
                 Draw();
@@ -186,6 +267,7 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
         } else if (button == 4) { //scrolling
             cy -= 1;
         }
+        figures_is_visible();
         glutPostRedisplay();
     }
 
@@ -204,10 +286,10 @@ void on_mouse_drag(int ax, int ay) {
                 Y0 = Y;
                 break;
             case 2:                             // Гумка
-                draw_circle(X0 , Y0 , erWidth, 0.8, 1.0, 0.8);
+                draw_circle(X0, Y0, erWidth, 0.8, 1.0, 0.8);
                 for (figure &f:figures) {
                     border c = f.extrem;
-                    if ((abs(X+cx - f.center.x) < erWidth) && (abs(Y +cy- f.center.y) < erWidth)) {
+                    if ((abs(X + cx - f.center.x) < erWidth) && (abs(Y + cy - f.center.y) < erWidth)) {
                         f.fordel = true;
                         f.visible = false;
                         break;
@@ -219,13 +301,16 @@ void on_mouse_drag(int ax, int ay) {
                 break;
             case 3:                     //Лінія
 //                Draw();
-                draw_line(old_X0, old_Y0, old_X, old_Y, penWidth*2, cFon);
-                draw_line(X0, Y0, X, Y, penWidth*2, cAll);
-                old_X0 = X0; old_Y0 = Y0; old_X = X; old_Y = Y;
+                draw_line(old_X0, old_Y0, old_X, old_Y, penWidth * 2, cFon);
+                draw_line(X0, Y0, X, Y, penWidth * 2, cAll);
+                old_X0 = X0;
+                old_Y0 = Y0;
+                old_X = X;
+                old_Y = Y;
                 break;
             case 20:
-                cx += (X0-X)*0.03;
-                cy += (Y0-Y)*0.03;
+                cx += (X0 - X) * 0.03;
+                cy += (Y0 - Y) * 0.03;
                 glutPostRedisplay();
                 break;
         }
@@ -235,12 +320,87 @@ void on_mouse_drag(int ax, int ay) {
     glFlush();
 }
 
+//void insert_screenshot() {
+//    int w, h, x0, y0;
+//    y0 = 60;
+//    int32_t pix;
+//    std::ifstream fin("tmp.txt"); // окрываем файл для чтения
+//    if (fin.is_open()) {
+//        fin >> w;
+//        fin >> h;
+//        x0 = WinWid - w;
+//        while (!fin.eof()) {
+//            int x, y;
+//            fin >> y;
+//            fin >> x;
+//            fin >> pix;
+//            color_t c;
+//            c.y = WinHei - y0 - y + cy;
+//            c.x = x + x0 + cx;
+//            c.r = pix / 65536 / 256.0;
+//            c.g = (pix % 65536) / 256 / 256.0;
+//            c.b = pix % 256 / 256.0;
+//            texture.push_back(c);
+//        }
+//        fin.close();     // закрываем файл
+//        std::cout << "(" << w << ", " << h << ")" << std::endl;
+//        std::ifstream file;
+//        file.open("tmp.txt");
+//        file.close();
+//        if (file) {
+//            std::cout << "Удаляем файл tmp.txt.\n";
+//            int n;
+//            n = remove("tmp.txt");
+//        }
+//    }
+//    Draw();
+//}
+
+
+void _insert_screenshot() {
+    int w, h, x0, y0;
+    y0 = 60;
+    int32_t pix;
+    std::ifstream fin("tmp.txt"); // окрываем файл для чтения
+    if (fin.is_open()) {
+        fin >> w;
+        fin >> h;
+        x0 = WinWid - w;
+        while (!fin.eof()) {
+            int x, y;
+            fin >> y;
+            fin >> x;
+            fin >> pix;
+            color_t c;
+            c.y = WinHei - y0 - y + cy;
+            c.x = x + x0 + cx;
+            c.r = pix / 65536 / 256.0;
+            c.g = (pix % 65536) / 256 / 256.0;
+            c.b = pix % 256 / 256.0;
+            texture.push_back(c);
+        }
+        fin.close();     // закрываем файл
+        std::cout << "(" << w << ", " << h << ")" << std::endl;
+        std::ifstream file;
+        file.open("tmp.txt");
+        file.close();
+        if (file) {
+            std::cout << "Удаляем файл tmp.txt.\n";
+            int n;
+            n = remove("tmp.txt");
+        }
+    }
+    Draw();
+}
+
+
 void on_keypress(unsigned char key, int x, int y) {
     std::cout << (int) key << std::endl;
     switch ((int) key) {   //ESC
         case 27:
             std::cout << "ESC" << std::endl;
-            glutDestroyWindow(window);
+            close_app();
+
             break;
         case 112:
             tool = 1;
@@ -259,40 +419,67 @@ void on_keypress(unsigned char key, int x, int y) {
             break;
         case 127:
             figures.clear();
-//            std::cout << "size " << figures.size() << std::endl;
             Draw();
+            break;
+        case 102: //F
+            glutFullScreen();
             break;
     }
 }
 
-void keySpecialUp(int key, int x, int y){
-    cout<<"key "<<key<<endl;
+
+void keySpecialUp(int key, int x, int y) {
+    std::cout << "key " << key << std::endl;
     switch (key) {   //UP
         case 101:
             cy += 100;
+            figures_is_visible();
             break;
         case 103: //LEFT
             cy -= 100;
+            figures_is_visible();
             break;
         case 100:
             cx -= 100;
+            figures_is_visible();
             break;
         case 102: //RIGHT
             cx += 100;
+            figures_is_visible();
             break;
     }
     Draw();
 }
 
-void mouseWheel(){
-
+void close_app() {
+    std::ifstream file;
+    file.open("is_work.txt");
+    file.close();
+    if (file) {
+        std::cout << "Удаляем файл is_work.txt.\n";
+        int n;
+        n = remove("is_work.txt");
+    }
+    glutDestroyWindow(window);
 }
 
+void on_window_status(int status) {
+    if (status == GLUT_HIDDEN) {
+        std::cout << "Згорнуло" << std::endl;
+        std::ofstream fout("flag.txt");
+//        fout << "" << std::endl;
+        fout.close();
+    }
+
+}
 
 int main(int argc, char **argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-    glutInitWindowSize(WinWid, WinHei-40);
+    WinWid = glutGet(GLUT_SCREEN_WIDTH);
+    WinHei = glutGet(GLUT_SCREEN_HEIGHT);
+
+    glutInitWindowSize(WinWid, WinHei - 40);
     glutInitWindowPosition(0, 0);
     window = glutCreateWindow("Hello OpenGL");
     glutDisplayFunc(Draw);
@@ -300,11 +487,181 @@ int main(int argc, char **argv) {
     glutSpecialUpFunc(keySpecialUp);
     glutMouseFunc(on_mouse_down_up);
     glutMotionFunc(on_mouse_drag);
+    glutWindowStatusFunc(on_window_status);
 
-//    glutTimerFunc(50, Timer, 0);
+
+    glutTimerFunc(2000, Timer, 0);
     Initialize();
-//    image = auxDIBImageLoad("photo.bmp")
-//    glutFullScreen();
+
+//    glutHideWindow();
+//    glutIconifyWindow();
+//    glutShowWindow();
     glutMainLoop();
     return 0;
 }
+
+int insert_screenshot() {
+
+    char *fileName = "file.bmp";
+// открываем файл
+    std::ifstream fileStream(fileName, std::ifstream::binary);
+    if (!fileStream) {
+        std::cout << "Error opening file '" << fileName << "'." << std::endl;
+        return 0;
+    }
+
+    // заголовк изображения
+    BITMAPFILEHEADER fileHeader;
+    read(fileStream, fileHeader.bfType, sizeof(fileHeader.bfType));
+    read(fileStream, fileHeader.bfSize, sizeof(fileHeader.bfSize));
+    read(fileStream, fileHeader.bfReserved1, sizeof(fileHeader.bfReserved1));
+    read(fileStream, fileHeader.bfReserved2, sizeof(fileHeader.bfReserved2));
+    read(fileStream, fileHeader.bfOffBits, sizeof(fileHeader.bfOffBits));
+
+    if (fileHeader.bfType != 0x4D42) {
+        std::cout << "Error: '" << fileName << "' is not BMP file." << std::endl;
+        return 0;
+    }
+
+    // информация изображения
+    BITMAPINFOHEADER fileInfoHeader;
+    read(fileStream, fileInfoHeader.biSize, sizeof(fileInfoHeader.biSize));
+
+    // bmp core
+    if (fileInfoHeader.biSize >= 12) {
+        read(fileStream, fileInfoHeader.biWidth, sizeof(fileInfoHeader.biWidth));
+        read(fileStream, fileInfoHeader.biHeight, sizeof(fileInfoHeader.biHeight));
+        read(fileStream, fileInfoHeader.biPlanes, sizeof(fileInfoHeader.biPlanes));
+        read(fileStream, fileInfoHeader.biBitCount, sizeof(fileInfoHeader.biBitCount));
+    }
+
+    // получаем информацию о битности
+    int colorsCount = fileInfoHeader.biBitCount >> 3;
+    if (colorsCount < 3) {
+        colorsCount = 3;
+    }
+
+    int bitsOnColor = fileInfoHeader.biBitCount / colorsCount;
+    int maskValue = (1 << bitsOnColor) - 1;
+
+    // bmp v1
+    if (fileInfoHeader.biSize >= 40) {
+        read(fileStream, fileInfoHeader.biCompression, sizeof(fileInfoHeader.biCompression));
+        read(fileStream, fileInfoHeader.biSizeImage, sizeof(fileInfoHeader.biSizeImage));
+        read(fileStream, fileInfoHeader.biXPelsPerMeter, sizeof(fileInfoHeader.biXPelsPerMeter));
+        read(fileStream, fileInfoHeader.biYPelsPerMeter, sizeof(fileInfoHeader.biYPelsPerMeter));
+        read(fileStream, fileInfoHeader.biClrUsed, sizeof(fileInfoHeader.biClrUsed));
+        read(fileStream, fileInfoHeader.biClrImportant, sizeof(fileInfoHeader.biClrImportant));
+    }
+
+    // bmp v2
+    fileInfoHeader.biRedMask = 0;
+    fileInfoHeader.biGreenMask = 0;
+    fileInfoHeader.biBlueMask = 0;
+
+    if (fileInfoHeader.biSize >= 52) {
+        read(fileStream, fileInfoHeader.biRedMask, sizeof(fileInfoHeader.biRedMask));
+        read(fileStream, fileInfoHeader.biGreenMask, sizeof(fileInfoHeader.biGreenMask));
+        read(fileStream, fileInfoHeader.biBlueMask, sizeof(fileInfoHeader.biBlueMask));
+    }
+
+    // если маска не задана, то ставим маску по умолчанию
+    if (fileInfoHeader.biRedMask == 0 || fileInfoHeader.biGreenMask == 0 || fileInfoHeader.biBlueMask == 0) {
+        fileInfoHeader.biRedMask = maskValue << (bitsOnColor * 2);
+        fileInfoHeader.biGreenMask = maskValue << bitsOnColor;
+        fileInfoHeader.biBlueMask = maskValue;
+    }
+
+    // bmp v3
+    if (fileInfoHeader.biSize >= 56) {
+        read(fileStream, fileInfoHeader.biAlphaMask, sizeof(fileInfoHeader.biAlphaMask));
+    } else {
+        fileInfoHeader.biAlphaMask = maskValue << (bitsOnColor * 3);
+    }
+
+    // bmp v4
+    if (fileInfoHeader.biSize >= 108) {
+        read(fileStream, fileInfoHeader.biCSType, sizeof(fileInfoHeader.biCSType));
+        read(fileStream, fileInfoHeader.biEndpoints, sizeof(fileInfoHeader.biEndpoints));
+        read(fileStream, fileInfoHeader.biGammaRed, sizeof(fileInfoHeader.biGammaRed));
+        read(fileStream, fileInfoHeader.biGammaGreen, sizeof(fileInfoHeader.biGammaGreen));
+        read(fileStream, fileInfoHeader.biGammaBlue, sizeof(fileInfoHeader.biGammaBlue));
+    }
+
+    // bmp v5
+    if (fileInfoHeader.biSize >= 124) {
+        read(fileStream, fileInfoHeader.biIntent, sizeof(fileInfoHeader.biIntent));
+        read(fileStream, fileInfoHeader.biProfileData, sizeof(fileInfoHeader.biProfileData));
+        read(fileStream, fileInfoHeader.biProfileSize, sizeof(fileInfoHeader.biProfileSize));
+        read(fileStream, fileInfoHeader.biReserved, sizeof(fileInfoHeader.biReserved));
+    }
+
+    // проверка на поддерку этой версии формата
+    if (fileInfoHeader.biSize != 12 && fileInfoHeader.biSize != 40 && fileInfoHeader.biSize != 52 &&
+        fileInfoHeader.biSize != 56 && fileInfoHeader.biSize != 108 && fileInfoHeader.biSize != 124) {
+        std::cout << "Error: Unsupported BMP format." << std::endl;
+        return 0;
+    }
+
+    if (fileInfoHeader.biBitCount != 16 && fileInfoHeader.biBitCount != 24 && fileInfoHeader.biBitCount != 32) {
+        std::cout << "Error: Unsupported BMP bit count." << std::endl;
+        return 0;
+    }
+
+    if (fileInfoHeader.biCompression != 0 && fileInfoHeader.biCompression != 3) {
+        std::cout << "Error: Unsupported BMP compression." << std::endl;
+        return 0;
+    }
+
+    // rgb info
+    RGBQUAD **rgbInfo = new RGBQUAD *[fileInfoHeader.biHeight];
+
+    for (unsigned int i = 0; i < fileInfoHeader.biHeight; i++) {
+        rgbInfo[i] = new RGBQUAD[fileInfoHeader.biWidth];
+    }
+
+    // определение размера отступа в конце каждой строки
+    int linePadding = ((fileInfoHeader.biWidth * (fileInfoHeader.biBitCount / 8)) % 4) & 3;
+
+    // чтение
+    unsigned int bufer;
+
+    for (unsigned int i = 0; i < fileInfoHeader.biHeight; i++) {
+        for (unsigned int j = 0; j < fileInfoHeader.biWidth; j++) {
+            read(fileStream, bufer, fileInfoHeader.biBitCount / 8);
+
+            rgbInfo[i][j].rgbRed = bitextract(bufer, fileInfoHeader.biRedMask);
+            rgbInfo[i][j].rgbGreen = bitextract(bufer, fileInfoHeader.biGreenMask);
+            rgbInfo[i][j].rgbBlue = bitextract(bufer, fileInfoHeader.biBlueMask);
+            rgbInfo[i][j].rgbReserved = bitextract(bufer, fileInfoHeader.biAlphaMask);
+        }
+        fileStream.seekg(linePadding, std::ios_base::cur);
+    }
+    int w, h, x0, y0;
+    w = fileInfoHeader.biWidth;
+    h = fileInfoHeader.biHeight;
+    y0 = WinHei-h - 60; //400;
+    x0 = WinWid - w;
+    color_t c;
+
+    // вывод
+    for (unsigned int i = 0; i < fileInfoHeader.biHeight; i++) {
+        for (unsigned int j = 0; j < fileInfoHeader.biWidth; j++) {
+            c.y = y0 + i + cy;
+            c.x = j + x0 + cx;
+            c.b = rgbInfo[i][j].rgbRed / 256.0;
+            c.g = rgbInfo[i][j].rgbGreen / 256.0;
+            c.r = rgbInfo[i][j].rgbBlue / 256.0;
+            texture.push_back(c);
+
+        }
+    }
+
+
+    std::cout << "Удаляем файл file.bmp.\n";
+    int n;
+    n = remove("file.bmp");
+    return 1;
+
+}
+

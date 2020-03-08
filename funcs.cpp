@@ -4,7 +4,7 @@
 #include <GL/glut.h>
 #include <math.h>
 #include <list>
-#include <fstream>
+
 #include "funcs.h"
 //#include <SOIL/SOIL.h>
 //#include <png.h>
@@ -13,36 +13,7 @@
 
 using namespace std;
 
-//typedef struct point {
-//    float x;
-//    float y;
-//}_point;
-//
-//typedef struct border {
-//    float xmin;
-//    float ymin;
-//    float xmax;
-//    float ymax;
-//}_border;
-//
-//typedef struct point {
-//    float x;
-//    float y;
-//}_point;
-//
-//typedef list <point> points;
-//
-//typedef struct figure {
-//    int id;
-//    bool fordel;
-//    bool visible;
-//    string name;
-//    points p;
-//    point center;
-//    int thickness;
-//    border extrem;
-//}_figure;
-//
+
 
 border border_polyline(points ps) {
     border c;
@@ -138,8 +109,9 @@ void test_draw(colorAll cAll) {
 
 
 
-string button_name [BUTTONS_COUNT] = {"ar", "hand", "pen", "er", "line"};
-int button_index [BUTTONS_COUNT] = {8, 20, 1, 2, 3};
+string button_name [BUTTONS_COUNT] = {"ar", "hand", "pen", "er", "line", "minimize", ""};
+int button_index [BUTTONS_COUNT] = {8, 20, 1, 2, 3, -1, -2};
+int button_visible [BUTTONS_COUNT] = {1, 1, 1, 1, 1, 1, 1};
 
 void draw_but(int i, float x0,float y0, colorAll cAll){
     float r,g,b;
@@ -174,6 +146,16 @@ void draw_but(int i, float x0,float y0, colorAll cAll){
                     g = lineFig[x][y][1];
                     b = lineFig[x][y][2];
                     break;
+                case 5:
+                    r = minimize[x][y][0];
+                    g = minimize[x][y][1];
+                    b = minimize[x][y][2];
+                    break;
+                case 6:
+                    r = saveApp[x][y][0];
+                    g = saveApp[x][y][1];
+                    b = saveApp[x][y][2];
+                    break;
             }
             if (r*g*b>0.9){
                 r=cAll.fonColorR;
@@ -190,7 +172,8 @@ void draw_but(int i, float x0,float y0, colorAll cAll){
 int check_buttons(float x0, float y0){
     for (int i=0; i < BUTTONS_COUNT; i++) {
         if ((x0 > buttons[i].x0) && (x0 < buttons[i].x0 + buttons[i].w) &&
-            (y0 > buttons[i].y0) && (y0 < buttons[i].y0 + buttons[i].h)) {
+            (y0 > buttons[i].y0) && (y0 < buttons[i].y0 + buttons[i].h) &&
+                (button_visible[i] == 1) ) {
             return buttons[i].tool;
         }
     }
@@ -200,7 +183,8 @@ int check_buttons(float x0, float y0){
 void draw_buttons(colorAll cAll){
     glBegin(GL_POINTS);
     for (int i=0; i < BUTTONS_COUNT; i++){
-        draw_but(i,buttons[i].x0,buttons[i].y0, cAll);
+        if (button_visible[i] == 1)
+            draw_but(i,buttons[i].x0,buttons[i].y0, cAll);
     }
     glEnd();
 }
@@ -221,34 +205,23 @@ void init_buttons(colorAll cAll){
 }
 
 
-typedef struct color_t {
-    int r;
-    int g;
-    int b;
-} color_t;
 
-vector <color_t> texture;
-
-void insert_screenshot(){
-    int w,h;
-    int32_t pix;
-    std::ifstream fin("tmp.txt"); // окрываем файл для чтения
-    if (fin.is_open())
-    {
-        fin>>w;
-        fin>>h;
-        for (int i=0; i<h*w;i++){
-                fin>>pix;
-                color_t c;
-                c.r = pix/65536;
-                c.g = (pix % 65536)/256;
-                c.b = pix % 256;
-            cout<<"r="<<c.r<<" g="<<c.g<<" b="<<c.b<<endl;
-                texture.push_back(c);
-
-        }
-
-        cout<<"("<<w<<", "<<h<<")"<<endl;
+unsigned char bitextract(const unsigned int byte, const unsigned int mask) {
+    if (mask == 0) {
+        return 0;
     }
-    fin.close();     // закрываем файл
+
+    // определение количества нулевых бит справа от маски
+    int
+            maskBufer = mask,
+            maskPadding = 0;
+
+    while (!(maskBufer & 1)) {
+        maskBufer >>= 1;
+        maskPadding++;
+    }
+
+    // применение маски и смещение
+    return (byte & mask) >> maskPadding;
 }
+

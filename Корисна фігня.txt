@@ -9,3 +9,8 @@ sudo apt-get install libsfml-dev
 sudo apt-get install libsdl2-2.0
 
 https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_Introduction.html
+
+
+HDC hdc=GetDC(0);
+Rectangle(hdc,0,0,800,600);
+ReleaseDC(0,hdc);
