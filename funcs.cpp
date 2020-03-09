@@ -10,6 +10,7 @@
 //#include <png.h>
 #include "buttons.h"
 #include <ctime>
+#include <fstream>
 
 
 using namespace std;
@@ -36,12 +37,23 @@ border border_polyline(points ps) {
 }
 
 
-void draw_circle(float x0, float y0, float r, float cR, float cG, float cB) {
-    glColor3f(cR, cG, cB);
-    glBegin(GL_TRIANGLE_FAN);
-    for (int i = 0; i < 50; i++) {
-        float a = (float) i / 50.0f * 3.1415f * 2.0f;
-        glVertex2f(cos(a) * r + x0, sin(a) * r + y0);
+void draw_circle(float x0, float y0, float r, float cR, float cG, float cB, int contur, int fill) {
+    if (fill==1) {
+        glColor3f(cR, cG, cB);
+        glBegin(GL_TRIANGLE_FAN);
+        for (int i = 0; i < 50; i++) {
+            float a = (float) i / 50.0f * 3.1415f * 2.0f;
+            glVertex2f(cos(a) * r + x0, sin(a) * r + y0);
+        }
+        glEnd();
+    }
+    glColor3f(0, 0, 0);
+    glBegin(GL_LINE_STRIP);
+    if (contur == 1){
+        for (int i = 0; i < 50; i++) {
+            float a = (float) i / 50.0f * 3.1415f * 2.0f;
+            glVertex2f(cos(a) * r + x0, sin(a) * r + y0);
+        }
     }
     glEnd();
 }
@@ -52,7 +64,7 @@ void draw_poly(list<point> ps, float cR, float cG, float cB, float thin) {
         float x = p.x;
         float y = p.y;
         float r = thin / 2;
-        draw_circle(x, y, r, cR, cG, cB);
+        draw_circle(x, y, r, cR, cG, cB, 0,1);
     }
 }
 
@@ -66,26 +78,26 @@ void line(float x0, float y0, float x1, float y1, float r, colorAll cAll) {
         int d = (dy << 1) - dx;
         int d1 = dy << 1;
         int d2 = (dy - dx) << 1;
-        draw_circle(x0, y0, r, cAll.colorR, cAll.colorG, cAll.colorB);
+        draw_circle(x0, y0, r, cAll.colorR, cAll.colorG, cAll.colorB,0,1);
         for (int x = x0 + sx, y = y0, i = 1; i <= dx; i++, x += sx) {
             if (d > 0) {
                 d += d2;
                 y += sy;
             } else d += d1;
-            draw_circle(x, y, r, cAll.colorR, cAll.colorG, cAll.colorB);
+            draw_circle(x, y, r, cAll.colorR, cAll.colorG, cAll.colorB,0,1);
         }
     } else {
         int d = (dx << 1) - dy;
         int d1 = dx << 1;
         int d2 = (dx - dy) << 1;
-        draw_circle(x0, y0, r, cAll.colorR, cAll.colorG, cAll.colorB);
+        draw_circle(x0, y0, r, cAll.colorR, cAll.colorG, cAll.colorB,0,1);
         for (int y = y0 + sy, x = x0, i = 1; i <= dy; i++, y += sy) {
             if (d > 0) {
                 d += d2;
                 x += sx;
             } else
                 d += d1;
-            draw_circle(x, y, r, cAll.colorR, cAll.colorG, cAll.colorB);
+            draw_circle(x, y, r, cAll.colorR, cAll.colorG, cAll.colorB,0,1);
         }
     }
 }
@@ -213,6 +225,17 @@ std::string trim (std::string s){
     }
     return s;
 }
+std::string trim (std::string s, char c){
+    // trim
+    while (s[0] == c){
+        s = s.erase(0,1);
+    }
+    while (s[s.size()-1] == c){
+        s = s.erase(s.size()-1,1);
+    }
+    return s;
+}
+
 
 std::string right_sym (std::string s, std::string subs ){
     int n = s.find(subs);
@@ -231,4 +254,84 @@ std::string left_sym (std::string s, std::string subs ){
         return s;
     }
     return "";
+}
+
+void draw_grid(int w, int h){
+    glEnable(GL_LINE_STIPPLE);
+    glLineStipple(1, 0x0101);
+    glColor3f(0.6,0.6,0.6);
+    glLineWidth(1);
+    glBegin(GL_LINES);
+    int step = 50;
+    for (float y=0; y<h; y +=step) {
+        glVertex2f(0, y);
+        glVertex2f(w, y);
+    }
+    for (float x=0; x<w; x +=step) {
+        glVertex2f(x, 0);
+        glVertex2f(x, h);
+    }
+    glEnd();
+    glDisable(GL_LINE_STIPPLE);
+
+}
+
+
+void save_figures(std::list<figure> figures){
+    std::string comma;
+    std::ofstream fout("figs.json");
+    fout << "{" << std::endl;
+    fout << "    \"count\": "<<figures.size()<<"," << std::endl;
+    fout << "    \"figures\": "<<"[" << std::endl;
+    int j = 0;
+    int countF = figures.size();
+    for (auto f: figures){
+        f.name = trim(f.name,'\"');
+        f.file_image = trim(f.file_image,'\"');
+        j++;
+        fout << "      {" << std::endl;
+        fout << "      \"id\": "<<f.id<<"," << std::endl;
+        fout << "      \"fordel\": "<<f.fordel<<"," << std::endl;
+        fout << "      \"visible\": "<<f.visible<<"," << std::endl;
+        fout << "      \"name\": \""<<f.name<<"\"," << std::endl;
+        fout << "      \"file_image\": \""<<f.file_image<<"\"," << std::endl;
+        fout << "      \"p\": [" << std::endl;
+        int i = 0; int count = f.p.size();
+        for (auto p: f.p) {
+            i++;
+            fout << "        {" << std::endl;
+            fout << "          \"x\": " << p.x << "," << std::endl;
+            fout << "          \"y\": " << p.y << "" << std::endl;
+            if (i < count) comma = ","; else comma = "";
+            fout << "        }"<< comma << std::endl;
+        }
+        fout << "      ]," << std::endl;
+        fout << "      \"center\": {" << std::endl;
+        fout << "        \"x\": "<<f.center.x<<"," << std::endl;
+        fout << "        \"y\": "<<f.center.y<<"" << std::endl;
+        fout << "      }," << std::endl;
+        fout << "      \"thickness\": "<<f.thickness<<"," << std::endl;
+        fout << "      \"extrem\": {"<< std::endl;
+        fout << "        \"xmin\": "<<f.extrem.xmin<<"," << std::endl;
+        fout << "        \"ymin\": "<<f.extrem.ymin<<"," << std::endl;
+        fout << "        \"xmax\": "<<f.extrem.xmax<<"," << std::endl;
+        fout << "        \"ymax\": "<<f.extrem.ymax<<"" << std::endl;
+        fout << "      },"<< std::endl;
+        fout << "      \"color\": {" << std::endl;
+        fout << "        \"colorR\": "<<f.color.colorR<<"," << std::endl;
+        fout << "        \"colorG\": "<<f.color.colorG<<"," << std::endl;
+        fout << "        \"colorB\": "<<f.color.colorB<<"," << std::endl;
+        fout << "        \"colorA\": "<<f.color.colorA<<"," << std::endl;
+        fout << "        \"fonColorR\": "<<f.color.fonColorR<<"," << std::endl;
+        fout << "        \"fonColorG\": "<<f.color.fonColorG<<"," << std::endl;
+        fout << "        \"fonColorB\": "<<f.color.fonColorB<<"" << std::endl;
+        fout << "      }," << std::endl;
+        fout << "      \"start_image\": "<<f.start_image<<"," << std::endl;
+        fout << "      \"end_image\": "<<f.end_image<<"" << std::endl;
+        if (j < countF) comma = ","; else comma = "";
+        fout <<"        }"<< comma << std::endl;
+    }
+    fout <<"      ]" << std::endl;
+    fout << "}" << std::endl;
+    fout.close();
 }

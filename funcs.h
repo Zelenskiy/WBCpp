@@ -9,34 +9,34 @@
 
 
 typedef struct colorAll {
-    float colorR;
-    float colorG;
-    float colorB;
-    float colorA;
-    float fonColorR;
-    float fonColorG;
-    float fonColorB;
-    float fonColorA;
+    float colorR=0;
+    float colorG=0;
+    float colorB=0;
+    float colorA=0;
+    float fonColorR=0;
+    float fonColorG=0;
+    float fonColorB=0;
+    float fonColorA=0;
 } _colorAll;
 
 typedef struct border {
-    float xmin;
-    float ymin;
-    float xmax;
-    float ymax;
+    float xmin=0;
+    float ymin=0;
+    float xmax=0;
+    float ymax=0;
 } _border;
 
 typedef struct point {
-    float x;
-    float y;
+    float x=0;
+    float y=0;
 } _point;
 
 typedef struct color_t {
-    float r;
-    float g;
-    float b;
-    int x;
-    int y;
+    float r=0;
+    float g=0;
+    float b=0;
+    int x=0;
+    int y=0;
 } _color_t;
 
 
@@ -48,17 +48,17 @@ typedef std::vector<point> points;
 
 typedef struct figure {
     int id;
-    bool fordel;
-    bool visible;
-    std::string name;
-    std::string file_image;
+    bool fordel = false;
+    bool visible = true;
+    std::string name = "";
+    std::string file_image = "";
     points p;
     point center;
-    int thickness;
+    int thickness = 2;
     border extrem;
     colorAll color;
-    int start_image;
-    int end_image;
+    int start_image = 0;
+    int end_image = 0;
 } _figure;
 
 
@@ -142,7 +142,7 @@ void fig_empty(figure);
 
 border border_polyline(points ps);
 
-void draw_circle(float x0, float y0, float r, float cR, float cG, float cB);
+void draw_circle(float x0, float y0, float r, float cR, float cG, float cB, int contur, int fill);
 
 void draw_poly(std::list<point> ps, float cR, float cG, float cB, float thin);
 
@@ -172,5 +172,11 @@ std::string trim(std::string s);
 std::string right_sym(std::string s, std::string subs);
 
 std::string left_sym(std::string s, std::string subs);
+
+void draw_grid(int w, int h);
+
+void save_figures(std::list<figure> figures);
+
+std::string trim (std::string s, char c);
 
 #endif //WBCPP_FUNCS_H

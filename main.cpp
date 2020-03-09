@@ -56,6 +56,8 @@ void close_app();
 
 void draw_image(int start, int end);
 
+void load_figures();
+
 
 void figures_is_visible() {
     for (auto &f: figures) {
@@ -119,6 +121,7 @@ void draw_pictures_all() {
     glEnd();
 }
 
+
 void draw_image(int start, int end) {
     glBegin(GL_POINTS);
     for (int i = start; i <= end; ++i) {
@@ -138,6 +141,9 @@ void draw_image(int start, int end) {
 void Draw() {
     Render();
 //    draw_pictures();
+    if (isGrid) {
+        draw_grid(WinWid, WinHei);
+    }
     draw_buttons(cAll);
     glFlush();
 }
@@ -208,7 +214,7 @@ void init_colors() {
     cAll.fonColorA = 1.0;
 }
 
-void write_ini(){
+void write_ini() {
     std::ofstream fout("wb.ini");
     fout << "[MAIN]" << std::endl;
     fout << "fonColorR = " << cAll.fonColorR << std::endl;
@@ -226,31 +232,34 @@ void write_ini(){
     fout.close();
 }
 
-void read_ini(){
+void read_ini() {
     std::ifstream file_ini;
     file_ini.open("wb.ini");
     if (file_ini) {
         //Читаємо
-        while(file_ini) {
+        while (file_ini) {
             std::string str;
             std::getline(file_ini, str);
             // Обработка строки str
             // Шукаємо перший символ "="
-            std::string field = left_sym(str,"=");
-            std::string value = right_sym(str,"=");
+            std::string field = left_sym(str, "=");
+            std::string value = right_sym(str, "=");
             if (field == "fonColorR") cFon.colorR = stof(value);
             if (field == "fonColorG") cFon.colorG = stof(value);
             if (field == "fonColorB") cFon.colorB = stof(value);
             if (field == "penColorR") cAll.colorR = stof(value);
-            if (field == "penColorG") cAll.colorR = stof(value);
-            if (field == "penColorB") cAll.colorR = stof(value);
+            if (field == "penColorG")cAll.colorG = stof(value);
+            if (field == "penColorB") cAll.colorB = stof(value);
             if (field == "penWidth") penWidth = stof(value);
             if (field == "erWidth") erWidth = stof(value);
             if (field == "grid")
-                if ((value == "true")||(value == "True")||(value == "TRUE"))
+                if ((value == "true") || (value == "True") || (value == "TRUE"))
                     isGrid = true;
                 else
                     isGrid = false;
+            cAll.fonColorR = cFon.colorR;
+            cAll.fonColorG = cFon.colorG;
+            cAll.fonColorB = cFon.colorB;
 
         }
 
@@ -259,9 +268,7 @@ void read_ini(){
         write_ini();
     }
     file_ini.close();
-    cAll.fonColorR = cFon.colorR;
-    cAll.fonColorG = cFon.colorG;
-    cAll.fonColorB = cFon.colorB;
+
 
 }
 
@@ -270,12 +277,12 @@ void init_flags() {
     system("mkdir lessons");
     std::cout << currentDateToString() << std::endl;
     read_ini();
-
-
     std::ofstream fout("is_work.txt");
     fout << "Hello. I work!" << std::endl;
-
     fout.close();
+
+
+
 }
 
 void Initialize() {
@@ -301,6 +308,7 @@ void Initialize() {
 float m_s(float y) {
     return WinHei - y - 60;
 }
+
 
 
 void on_mouse_down_up(int button, int state, int ax, int ay) {
@@ -365,7 +373,9 @@ void on_mouse_drag(int ax, int ay) {
                 Y0 = Y;
                 break;
             case 2:                             // Гумка
-                draw_circle(X0, Y0, erWidth, 0.8, 1.0, 0.8);
+//                draw_circle(X0, Y0, erWidth+10, cAll.fonColorR, cAll.fonColorG, cAll.fonColorB,0,1);
+                draw_circle(X0, Y0, erWidth, cAll.fonColorR, cAll.fonColorG, cAll.fonColorB,0,1);
+//                draw_circle(X0, Y0, erWidth, 0.8, 1.0, 0.8,1);
                 for (figure &f:figures) {
                     border c = f.extrem;
                     if ((abs(X + cx - f.center.x) < erWidth) && (abs(Y + cy - f.center.y) < erWidth)) {
@@ -379,7 +389,6 @@ void on_mouse_drag(int ax, int ay) {
                 Y0 = Y;
                 break;
             case 3:                     //Лінія
-//                Draw();
                 draw_line(old_X0, old_Y0, old_X, old_Y, penWidth * 2, cFon);
                 draw_line(X0, Y0, X, Y, penWidth * 2, cAll);
                 old_X0 = X0;
@@ -416,14 +425,17 @@ void on_keypress(unsigned char key, int x, int y) {
         case 101:
             tool = 2;
             break;
-        case 108:
-            tool = 3;
-            break;
+//        case 108:
+//            tool = 3;
+//            break;
         case 97:
             test_draw(cAll);
             break;
         case 115:   //S
             insert_screenshot();
+            break;
+        case 108:   //L
+            load_figures();
             break;
         case 127:
             figures.clear();
@@ -469,12 +481,14 @@ void close_app() {
         n = remove("is_work.txt");
     }
     //Зберігаємо фігури до файлу
+    save_figures(figures);
 
 
-    //архівуємо файли
-    //формуємо унікальне ім'я
+    //Зберігаємо налаштування
+    write_ini();
+    //архівуємо файли, формуємо унікальне ім'я
     std::string name_zip = "lessons/" + currentDateToString() + ".zip";
-    std::string command = "zip -m " + name_zip+ " tmp/*.*";
+    std::string command = "zip -m " + name_zip + " tmp/*.*";
     system(command.c_str());
     glutDestroyWindow(window);
 }
@@ -705,6 +719,259 @@ int insert_screenshot() {
     n = rename("file.bmp", ("tmp/" + name).c_str());
 //    n = remove("file.bmp");
     return 1;
+
+}
+
+
+void load_figures(){
+
+    std::ifstream file;
+    file.open("figs.json");
+    if (file) {
+        //Читаємо
+        int num = 0;
+        int count;
+        figure fig;
+        figures.clear();
+        while (file) {
+            std::string s;
+            std::getline(file, s);
+            s = trim(s);
+            int n = s.find("\"count\"");
+            if (n!=-1) {
+                s = right_sym(s,":");
+                s = trim(s,',');
+                count = std::stoi(s);
+                id = count;
+                std::cout<<"count="<<count<<std::endl;
+                continue;
+            }
+            n = s.find("\"id\"");
+            if (n!=-1) {
+                s = right_sym(s,":");
+                s = trim(s,',');
+                int id = std::stoi(s);
+                fig.id = id;
+                continue;
+            }
+            n = s.find("\"fordel\"");
+            if (n!=-1) {
+                s = right_sym(s,":");
+                s = trim(s,',');
+                bool fordel = std::stoi(s);
+                fig.fordel = fordel;
+                continue;
+            }
+            n = s.find("\"visible\"");
+            if (n!=-1) {
+                s = right_sym(s,":");
+                s = trim(s,',');
+                bool visible = std::stoi(s);
+                fig.visible = visible;
+                continue;
+            }
+            n = s.find("\"name\"");
+            if (n!=-1) {
+                s = right_sym(s,":");
+                s = trim(s,',');
+                std::string name = s;
+                s = trim(s,'\"');
+                fig.name = s;
+                continue;
+            }
+            n = s.find("\"file_image\"");
+            if (n!=-1) {
+                s = right_sym(s,":");
+                s = trim(s,',');
+                std::string file_image = s;
+                s = trim(s,'\"');
+                fig.file_image = s;
+                continue;
+            }
+            n = s.find("\"p\"");
+            if (n!=-1) {
+                //Тут обробляєм масив точок
+                points ps;
+                std::getline(file, s);
+                s = trim(s);
+                float x,y;
+                point p;
+                while (s != "],"){
+                    std::getline(file, s);
+                    s = trim(s);
+                    n = s.find("\"x\"");
+                    if (n!=-1) {
+                        s = right_sym(s,":");
+                        s = trim(s,',');
+                        x = std::stof(s);
+                        continue;
+                    }
+                    n = s.find("\"y\"");
+                    if (n!=-1) {
+                        s = right_sym(s,":");
+                        s = trim(s,',');
+                        y = std::stof(s);
+                        continue;
+                    }
+                    n = s.find("}");
+                    if (n!=-1) {
+                        p.x = x;
+                        p.y = y;
+                        ps.push_back(p);
+                        continue;
+                    }
+
+                }
+                fig.p = ps;
+                continue;
+            }
+            n = s.find("\"center\"");
+            if (n!=-1) {
+                float x,y;
+                while ((s != "}")&&(s != "},")) {
+                    std::getline(file, s);
+                    s = trim(s);
+                    n = s.find("\"x\"");
+                    if (n != -1) {
+                        s = right_sym(s, ":");
+                        s = trim(s, ',');
+                        x = std::stof(s);
+                        continue;
+                    }
+                    n = s.find("\"y\"");
+                    if (n != -1) {
+                        s = right_sym(s, ":");
+                        s = trim(s, ',');
+                        y = std::stof(s);
+                    }
+                }
+                fig.center.x = x;
+                fig.center.y = y;
+            }
+            n = s.find("\"thickness\"");
+            if (n!=-1) {
+                s = right_sym(s,":");
+                s = trim(s,',');
+                fig.thickness = std::stoi(s);
+                continue;
+            }
+            n = s.find("\"extrem\"");
+            if (n!=-1) {
+                float xmin,ymin,xmax,ymax;
+                while ((s != "}")&&(s != "},")) {
+                    std::getline(file, s);
+                    s = trim(s);
+                    n = s.find("\"xmin\"");
+                    if (n != -1) {
+                        s = right_sym(s, ":");
+                        s = trim(s, ',');
+                        xmin = std::stof(s);
+                        continue;
+                    }
+                    n = s.find("\"ymin\"");
+                    if (n != -1) {
+                        s = right_sym(s, ":");
+                        s = trim(s, ',');
+                        ymin = std::stof(s);
+                    }
+                    n = s.find("\"xmax\"");
+                    if (n != -1) {
+                        s = right_sym(s, ":");
+                        s = trim(s, ',');
+                        xmax = std::stof(s);
+                        continue;
+                    }
+                    n = s.find("\"ymax\"");
+                    if (n != -1) {
+                        s = right_sym(s, ":");
+                        s = trim(s, ',');
+                        ymax = std::stof(s);
+                    }
+                }
+                fig.extrem.xmin = xmin;
+                fig.extrem.ymin = ymin;
+                fig.extrem.xmax = xmax;
+                fig.extrem.ymax = ymax;
+            }
+            n = s.find("\"color\"");
+            if (n!=-1) {
+                float colorR,colorG,colorB,colorA, fonColorR, fonColorG, fonColorB;
+                while ((s != "}")&&(s != "},")) {
+                    std::getline(file, s);
+                    s = trim(s);
+                    n = s.find("\"colorR\"");
+                    if (n != -1) {
+                        s = right_sym(s, ":");
+                        s = trim(s, ',');
+                        colorR = std::stof(s);
+                        continue;
+                    }
+                    n = s.find("\"colorG\"");
+                    if (n != -1) {
+                        s = right_sym(s, ":");
+                        s = trim(s, ',');
+                        colorG = std::stof(s);
+                    }
+                    n = s.find("\"colorB\"");
+                    if (n != -1) {
+                        s = right_sym(s, ":");
+                        s = trim(s, ',');
+                        colorB = std::stof(s);
+                        continue;
+                    }
+                    n = s.find("\"colorA\"");
+                    if (n != -1) {
+                        s = right_sym(s, ":");
+                        s = trim(s, ',');
+                        colorA = std::stof(s);
+                    }
+                    n = s.find("\"fonColorR\"");
+                    if (n != -1) {
+                        s = right_sym(s, ":");
+                        s = trim(s, ',');
+                        fonColorR = std::stof(s);
+                    }
+                    n = s.find("\"fonColorG\"");
+                    if (n != -1) {
+                        s = right_sym(s, ":");
+                        s = trim(s, ',');
+                        fonColorG = std::stof(s);
+                    }
+                    n = s.find("\"fonColorB\"");
+                    if (n != -1) {
+                        s = right_sym(s, ":");
+                        s = trim(s, ',');
+                        fonColorB = std::stof(s);
+                    }
+                }
+                fig.color.colorR = colorR;
+                fig.color.colorG = colorG;
+                fig.color.colorB = colorB;
+                fig.color.colorA = colorA;
+                fig.color.fonColorR = fonColorR;
+                fig.color.fonColorG = fonColorG;
+                fig.color.fonColorB = fonColorB;
+            }
+            n = s.find("\"start_image\"");
+            if (n!=-1) {
+                s = right_sym(s,":");
+                s = trim(s,',');
+                fig.start_image = std::stoi(s);
+                continue;
+            }
+            n = s.find("\"end_image\"");
+            if (n!=-1) {
+                s = right_sym(s,":");
+                s = trim(s,',');
+                fig.end_image = std::stoi(s);
+                figures.push_back(fig);
+            }
+        }
+
+    } else {
+    }
+    file.close();
+    gl
 
 }
 
