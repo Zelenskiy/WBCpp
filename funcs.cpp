@@ -185,7 +185,6 @@ unsigned char bitextract(const unsigned int byte, const unsigned int mask) {
         maskBufer >>= 1;
         maskPadding++;
     }
-
     // применение маски и смещение
     return (byte & mask) >> maskPadding;
 }
@@ -202,4 +201,34 @@ std::string currentDateToString(){
     std::string str(buffer);
 
     return str;
+}
+
+std::string trim (std::string s){
+    // trim
+    while (s[0] == ' '){
+        s = s.erase(0,1);
+    }
+    while (s[s.size()-1] == ' '){
+        s = s.erase(s.size()-1,1);
+    }
+    return s;
+}
+
+std::string right_sym (std::string s, std::string subs ){
+    int n = s.find(subs);
+    if (n!=-1){
+        s = s.substr(n+1);
+        s = trim(s);
+        return s;
+    }
+    return "";
+}
+std::string left_sym (std::string s, std::string subs ){
+    int n = s.find(subs);
+    if (n!=-1){
+        s = s.substr(0, n);
+        s = trim(s);
+        return s;
+    }
+    return "";
 }

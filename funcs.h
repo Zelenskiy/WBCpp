@@ -160,11 +160,17 @@ int check_buttons(float x0, float y0);
 
 void draw_buttons(colorAll cAll);
 
+
 //void draw_pictures(float x0,float y0);
 //void insert_screenshot();
 unsigned char bitextract(const unsigned int byte, const unsigned int mask);
 
 std::string currentDateToString();
 
+std::string trim(std::string s);
+
+std::string right_sym(std::string s, std::string subs);
+
+std::string left_sym(std::string s, std::string subs);
 
 #endif //WBCPP_FUNCS_H

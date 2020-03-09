@@ -14,3 +14,7 @@ https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_Introduction.html
 HDC hdc=GetDC(0);
 Rectangle(hdc,0,0,800,600);
 ReleaseDC(0,hdc);
+
+c++ работа со строками string
+https://server.179.ru/tasks/cpp/total/161.html
+

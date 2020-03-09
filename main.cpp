@@ -36,6 +36,7 @@ float old_X0;
 float old_Y0;
 float old_X;
 float old_Y;
+bool isGrid = false;
 
 
 std::vector<color_t> texture;
@@ -69,7 +70,7 @@ void figures_is_visible() {
 
 
 void Render() {
-    glClearColor(0.6, 0.8, 0.4, 1.0);
+    glClearColor(cAll.fonColorR, cAll.fonColorG, cAll.fonColorB, cAll.fonColorA);
     glClearDepth(1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glColor3f(cAll.colorR, cAll.colorG, cAll.colorB);
@@ -207,47 +208,80 @@ void init_colors() {
     cAll.fonColorA = 1.0;
 }
 
+void write_ini(){
+    std::ofstream fout("wb.ini");
+    fout << "[MAIN]" << std::endl;
+    fout << "fonColorR = " << cAll.fonColorR << std::endl;
+    fout << "fonColorG = " << cAll.fonColorG << std::endl;
+    fout << "fonColorB = " << cAll.fonColorB << std::endl;
+    fout << "penColorR = " << cAll.colorR << std::endl;
+    fout << "penColorG = " << cAll.colorG << std::endl;
+    fout << "penColorB = " << cAll.colorB << std::endl;
+    if (isGrid)
+        fout << "grid = " << "true" << std::endl;
+    else
+        fout << "grid = " << "false" << std::endl;
+    fout << "penWidth = " << penWidth << std::endl;
+    fout << "erWidth = " << erWidth << std::endl;
+    fout.close();
+}
+
+void read_ini(){
+    std::ifstream file_ini;
+    file_ini.open("wb.ini");
+    if (file_ini) {
+        //Читаємо
+        while(file_ini) {
+            std::string str;
+            std::getline(file_ini, str);
+            // Обработка строки str
+            // Шукаємо перший символ "="
+            std::string field = left_sym(str,"=");
+            std::string value = right_sym(str,"=");
+            if (field == "fonColorR") cFon.colorR = stof(value);
+            if (field == "fonColorG") cFon.colorG = stof(value);
+            if (field == "fonColorB") cFon.colorB = stof(value);
+            if (field == "penColorR") cAll.colorR = stof(value);
+            if (field == "penColorG") cAll.colorR = stof(value);
+            if (field == "penColorB") cAll.colorR = stof(value);
+            if (field == "penWidth") penWidth = stof(value);
+            if (field == "erWidth") erWidth = stof(value);
+            if (field == "grid")
+                if ((value == "true")||(value == "True")||(value == "TRUE"))
+                    isGrid = true;
+                else
+                    isGrid = false;
+
+        }
+
+    } else {
+        //Пишемо новий
+        write_ini();
+    }
+    file_ini.close();
+    cAll.fonColorR = cFon.colorR;
+    cAll.fonColorG = cFon.colorG;
+    cAll.fonColorB = cFon.colorB;
+
+}
+
 void init_flags() {
     system("mkdir tmp");
     system("mkdir lessons");
     std::cout << currentDateToString() << std::endl;
-
-
-    std::ifstream file_ini;
-    file_ini.open("wb.ini");
-    file_ini.close();
-    if (file_ini) {
-        //Читаємо
-
-        file_ini.close();
-    } else {
-        //Пишемо новий
-        std::ofstream fout("wb.ini");
-        fout << "[MAIN]" << std::endl;
-        fout << "fonColorR = " << "0.6" << std::endl;
-        fout << "fonColorG = " << "0.8" << std::endl;
-        fout << "fonColorB = " << "0.4" << std::endl;
-        fout << "penColorR = " << "0.2" << std::endl;
-        fout << "penColorG = " << "0.5" << std::endl;
-        fout << "penColorB = " << "0.9" << std::endl;
-        fout << "grid = " << "true" << std::endl;
-        fout << "penWidth = " << "2" << std::endl;
-        fout << "erWidth = " << "10" << std::endl;
-
-
-        fout.close();
-    }
+    read_ini();
 
 
     std::ofstream fout("is_work.txt");
     fout << "Hello. I work!" << std::endl;
+
     fout.close();
 }
 
 void Initialize() {
-
-    init_flags();
     init_colors();
+    init_flags();
+
     init_buttons(cAll);
     glClearColor(cAll.fonColorR, cAll.fonColorG, cAll.fonColorB, cAll.fonColorA);
     glMatrixMode(GL_MATRIX_MODE);
@@ -434,6 +468,9 @@ void close_app() {
         int n;
         n = remove("is_work.txt");
     }
+    //Зберігаємо фігури до файлу
+
+
     //архівуємо файли
     //формуємо унікальне ім'я
     std::string name_zip = "lessons/" + currentDateToString() + ".zip";
@@ -481,12 +518,13 @@ int main(int argc, char **argv) {
 
 int insert_screenshot() {
     char *fileName = "file.bmp";
-// открываем файл
+    // открываем файл
     std::ifstream fileStream(fileName, std::ifstream::binary);
     if (!fileStream) {
         std::cout << "Error opening file '" << fileName << "'." << std::endl;
         return 0;
     }
+
 
     // заголовк изображения
     BITMAPFILEHEADER fileHeader;
