@@ -51,11 +51,14 @@ typedef struct figure {
     bool fordel;
     bool visible;
     std::string name;
+    std::string file_image;
     points p;
     point center;
     int thickness;
     border extrem;
     colorAll color;
+    int start_image;
+    int end_image;
 } _figure;
 
 
@@ -160,6 +163,8 @@ void draw_buttons(colorAll cAll);
 //void draw_pictures(float x0,float y0);
 //void insert_screenshot();
 unsigned char bitextract(const unsigned int byte, const unsigned int mask);
+
+std::string currentDateToString();
 
 
 #endif //WBCPP_FUNCS_H

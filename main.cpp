@@ -8,6 +8,10 @@
 #include <math.h>
 #include "funcs.h"
 #include <fstream>
+//#include "rapidjson/document.h"
+//#include "rapidjson/writer.h"
+//#include "rapidjson/stringbuffer.h"
+#include <bits/stdc++.h>
 
 
 float WinWid = 800.0;
@@ -33,6 +37,7 @@ float old_Y0;
 float old_X;
 float old_Y;
 
+
 std::vector<color_t> texture;
 
 int penWidth = 4;
@@ -47,12 +52,8 @@ figure fig;
 int insert_screenshot();
 
 void close_app();
-//
-//static unsigned short read_u16(FILE *fp);
-//
-//static unsigned int read_u32(FILE *fp);
-//
-//static int read_s32(FILE *fp);
+
+void draw_image(int start, int end);
 
 
 void figures_is_visible() {
@@ -76,6 +77,7 @@ void Render() {
     int i = 0;
     for (figure f: figures) {
         if ((f.visible == 1)) {
+
             if (f.name == "poly") {
                 points ps = f.p;
                 float XX0 = ps[0].x;
@@ -83,27 +85,25 @@ void Render() {
                 float XX = ps[1].x;
                 float YY = ps[1].y;
                 line(XX0 - cx, YY0 - cy, XX - cx, YY - cy, f.thickness, f.color);
-            } else {
-                if (f.name == "line") {
-                    points ps = f.p;
-                    float XX0 = ps[0].x;
-                    float YY0 = ps[0].y;
-                    float XX = ps[1].x;
-                    float YY = ps[1].y;
+            } else if (f.name == "line") {
+                points ps = f.p;
+                float XX0 = ps[0].x;
+                float YY0 = ps[0].y;
+                float XX = ps[1].x;
+                float YY = ps[1].y;
 //                    draw_circle_fill(XX0, YY0, f.thickness, f.color.colorR, f.color.colorG, f.color.colorB);
-                    line(XX0 - cx, YY0 - cy, XX - cx, YY - cy, f.thickness, f.color);
+                line(XX0 - cx, YY0 - cy, XX - cx, YY - cy, f.thickness, f.color);
 //                    draw_line(XX0 - cx, YY0 - cy, XX - cx, YY - cy, f.thickness * 2, f.color);
 //                    line(XX0, YY0, XX, YY, f.thickness, f.color);
-                }
+            } else if (f.name == "image") {
+                draw_image(f.start_image, f.end_image);
             }
         }
-//    glPopMatrix();
-
 
     }
 }
 
-void draw_pictures() {
+void draw_pictures_all() {
     glBegin(GL_POINTS);
     for (auto i = texture.begin(); i != texture.end(); ++i) {
         color_t c = *i;
@@ -114,17 +114,29 @@ void draw_pictures() {
         } else {
 
         }
-//        glVertex2d(c.x - cx, c.y - cy);
+    }
+    glEnd();
+}
 
+void draw_image(int start, int end) {
+    glBegin(GL_POINTS);
+    for (int i = start; i <= end; ++i) {
+        color_t c = texture[i];
+        glColor3f(c.b, c.g, c.r);
+        if ((c.x - cx > 0) && (c.x - cx < WinWid) &&
+            (c.y - cy > 0) && (c.y - cy < WinHei)) {
+            glVertex2d(c.x - cx, c.y - cy);
+        } else {
+
+        }
     }
     glEnd();
 }
 
 
 void Draw() {
-
     Render();
-    draw_pictures();
+//    draw_pictures();
     draw_buttons(cAll);
     glFlush();
 }
@@ -196,6 +208,37 @@ void init_colors() {
 }
 
 void init_flags() {
+    system("mkdir tmp");
+    system("mkdir lessons");
+    std::cout << currentDateToString() << std::endl;
+
+
+    std::ifstream file_ini;
+    file_ini.open("wb.ini");
+    file_ini.close();
+    if (file_ini) {
+        //Читаємо
+
+        file_ini.close();
+    } else {
+        //Пишемо новий
+        std::ofstream fout("wb.ini");
+        fout << "[MAIN]" << std::endl;
+        fout << "fonColorR = " << "0.6" << std::endl;
+        fout << "fonColorG = " << "0.8" << std::endl;
+        fout << "fonColorB = " << "0.4" << std::endl;
+        fout << "penColorR = " << "0.2" << std::endl;
+        fout << "penColorG = " << "0.5" << std::endl;
+        fout << "penColorB = " << "0.9" << std::endl;
+        fout << "grid = " << "true" << std::endl;
+        fout << "penWidth = " << "2" << std::endl;
+        fout << "erWidth = " << "10" << std::endl;
+
+
+        fout.close();
+    }
+
+
     std::ofstream fout("is_work.txt");
     fout << "Hello. I work!" << std::endl;
     fout.close();
@@ -243,8 +286,8 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
         if (button == GLUT_LEFT_BUTTON) {
             old_X0 = 0;
             old_Y0 = 0;
-            old_X = 0;
-            old_Y = 0;
+            old_X = ax;
+            old_Y = m_s(ay);
 //            fig.p.clear();
             if (state == GLUT_DOWN) {
                 down = true;
@@ -252,6 +295,8 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
                 Y0 = m_s(ay);
             } else {    // GLUT_UP
                 down = false;
+                old_X = 0;
+                old_Y = 0;
                 switch (tool) {
                     case 3:
                         draw_to_figures(X0, Y0, X, Y, cAll, penWidth);
@@ -308,9 +353,11 @@ void on_mouse_drag(int ax, int ay) {
                 old_X = X;
                 old_Y = Y;
                 break;
-            case 20:
-                cx += (X0 - X) * 0.03;
-                cy += (Y0 - Y) * 0.03;
+            case 20:                    // Тягаємо полотно
+                cx += (old_X - X);
+                cy += (old_Y - Y);
+                old_X = X;
+                old_Y = Y;
                 glutPostRedisplay();
                 break;
         }
@@ -318,79 +365,6 @@ void on_mouse_drag(int ax, int ay) {
     XX0 = X;
     YY0 = Y;
     glFlush();
-}
-
-//void insert_screenshot() {
-//    int w, h, x0, y0;
-//    y0 = 60;
-//    int32_t pix;
-//    std::ifstream fin("tmp.txt"); // окрываем файл для чтения
-//    if (fin.is_open()) {
-//        fin >> w;
-//        fin >> h;
-//        x0 = WinWid - w;
-//        while (!fin.eof()) {
-//            int x, y;
-//            fin >> y;
-//            fin >> x;
-//            fin >> pix;
-//            color_t c;
-//            c.y = WinHei - y0 - y + cy;
-//            c.x = x + x0 + cx;
-//            c.r = pix / 65536 / 256.0;
-//            c.g = (pix % 65536) / 256 / 256.0;
-//            c.b = pix % 256 / 256.0;
-//            texture.push_back(c);
-//        }
-//        fin.close();     // закрываем файл
-//        std::cout << "(" << w << ", " << h << ")" << std::endl;
-//        std::ifstream file;
-//        file.open("tmp.txt");
-//        file.close();
-//        if (file) {
-//            std::cout << "Удаляем файл tmp.txt.\n";
-//            int n;
-//            n = remove("tmp.txt");
-//        }
-//    }
-//    Draw();
-//}
-
-
-void _insert_screenshot() {
-    int w, h, x0, y0;
-    y0 = 60;
-    int32_t pix;
-    std::ifstream fin("tmp.txt"); // окрываем файл для чтения
-    if (fin.is_open()) {
-        fin >> w;
-        fin >> h;
-        x0 = WinWid - w;
-        while (!fin.eof()) {
-            int x, y;
-            fin >> y;
-            fin >> x;
-            fin >> pix;
-            color_t c;
-            c.y = WinHei - y0 - y + cy;
-            c.x = x + x0 + cx;
-            c.r = pix / 65536 / 256.0;
-            c.g = (pix % 65536) / 256 / 256.0;
-            c.b = pix % 256 / 256.0;
-            texture.push_back(c);
-        }
-        fin.close();     // закрываем файл
-        std::cout << "(" << w << ", " << h << ")" << std::endl;
-        std::ifstream file;
-        file.open("tmp.txt");
-        file.close();
-        if (file) {
-            std::cout << "Удаляем файл tmp.txt.\n";
-            int n;
-            n = remove("tmp.txt");
-        }
-    }
-    Draw();
 }
 
 
@@ -460,6 +434,11 @@ void close_app() {
         int n;
         n = remove("is_work.txt");
     }
+    //архівуємо файли
+    //формуємо унікальне ім'я
+    std::string name_zip = "lessons/" + currentDateToString() + ".zip";
+    std::string command = "zip -m " + name_zip+ " tmp/*.*";
+    system(command.c_str());
     glutDestroyWindow(window);
 }
 
@@ -501,7 +480,6 @@ int main(int argc, char **argv) {
 }
 
 int insert_screenshot() {
-
     char *fileName = "file.bmp";
 // открываем файл
     std::ifstream fileStream(fileName, std::ifstream::binary);
@@ -640,11 +618,33 @@ int insert_screenshot() {
     int w, h, x0, y0;
     w = fileInfoHeader.biWidth;
     h = fileInfoHeader.biHeight;
-    y0 = WinHei-h - 60; //400;
+    y0 = WinHei - h - 60; //400;
     x0 = WinWid - w;
     color_t c;
 
     // вывод
+
+    // ============
+    figure fig;
+    p.x = x0 + cx;
+    p.y = y0 + cy;
+    fig.p.push_back(p);
+    p.x = x0 + cx + w;
+    p.y = y0 + cy + h;
+    fig.p.push_back(p);
+    ++id;
+    fig.id = id;
+    fig.center.x = (X0 + X0 + w) / 2.0 + cx;
+    fig.center.y = (Y0 + Y0 + h) / 2.0 + cy;
+    fig.name = "image";
+    fig.fordel = false;
+    fig.visible = true;
+    fig.color = cAll;
+    fig.thickness = 0;
+
+    fig.extrem = border_polyline(fig.p);
+    fig.start_image = texture.size();
+
     for (unsigned int i = 0; i < fileInfoHeader.biHeight; i++) {
         for (unsigned int j = 0; j < fileInfoHeader.biWidth; j++) {
             c.y = y0 + i + cy;
@@ -656,11 +656,16 @@ int insert_screenshot() {
 
         }
     }
-
-
-    std::cout << "Удаляем файл file.bmp.\n";
+    fig.end_image = texture.size();
+    //Вигадуємо унікальне ім'я файлу
+    std::string name = currentDateToString() + ".bmp";
+    fig.file_image = name;
+    figures.push_back(fig);
+    // =============
+    std::cout << "Переміщаємо файл " << name << ".\n";
     int n;
-    n = remove("file.bmp");
+    n = rename("file.bmp", ("tmp/" + name).c_str());
+//    n = remove("file.bmp");
     return 1;
 
 }

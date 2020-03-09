@@ -9,10 +9,10 @@
 //#include <SOIL/SOIL.h>
 //#include <png.h>
 #include "buttons.h"
+#include <ctime>
 
 
 using namespace std;
-
 
 
 border border_polyline(points ps) {
@@ -45,7 +45,6 @@ void draw_circle(float x0, float y0, float r, float cR, float cG, float cB) {
     }
     glEnd();
 }
-
 
 
 void draw_poly(list<point> ps, float cR, float cG, float cB, float thin) {
@@ -102,96 +101,63 @@ void draw_line(float XX0, float YY0, float XX, float YY, int thin, colorAll cAll
 }
 
 
-
 void test_draw(colorAll cAll) {
     init_buttons(cAll);
 }
 
 
+string button_name[BUTTONS_COUNT] = {"ar", "hand", "pen", "er", "line", "minimize", "close"};
+int button_index[BUTTONS_COUNT] = {8, 20, 1, 2, 3, -1, -2};
+int button_visible[BUTTONS_COUNT] = {1, 1, 1, 1, 1, 1, 1};
 
-string button_name [BUTTONS_COUNT] = {"ar", "hand", "pen", "er", "line", "minimize", ""};
-int button_index [BUTTONS_COUNT] = {8, 20, 1, 2, 3, -1, -2};
-int button_visible [BUTTONS_COUNT] = {1, 1, 1, 1, 1, 1, 1};
+//void set_rgb(float r, float g, float b, int x, int y, float* var){
+//
+//}
 
-void draw_but(int i, float x0,float y0, colorAll cAll){
-    float r,g,b;
-    float w=32;
+void draw_but(int i, float x0, float y0, colorAll cAll) {
+    float r, g, b;
+    float w = 32;
     float h = 32;
-//    for (int y = 0; y < h; y++) {
-    for (int y = h-1; y >= 0; y--) {
+    for (int y = h - 1; y >= 0; y--) {
         for (int x = 0; x < w; x++) {
-            switch (i){
-                case 0:
-                    r = ar[x][y][0];
-                    g = ar[x][y][1];
-                    b = ar[x][y][2];
-                    break;
-                case 1:
-                    r = hand[x][y][0];
-                    g = hand[x][y][1];
-                    b = hand[x][y][2];
-                    break;
-                case 2:
-                    r = pen[x][y][0];
-                    g = pen[x][y][1];
-                    b = pen[x][y][2];
-                    break;
-                case 3:
-                    r = err[x][y][0];
-                    g = err[x][y][1];
-                    b = err[x][y][2];
-                    break;
-                case 4:
-                    r = lineFig[x][y][0];
-                    g = lineFig[x][y][1];
-                    b = lineFig[x][y][2];
-                    break;
-                case 5:
-                    r = minimize[x][y][0];
-                    g = minimize[x][y][1];
-                    b = minimize[x][y][2];
-                    break;
-                case 6:
-                    r = saveApp[x][y][0];
-                    g = saveApp[x][y][1];
-                    b = saveApp[x][y][2];
-                    break;
+            r = btn[i][x][y][0];
+            g = btn[i][x][y][1];
+            b = btn[i][x][y][2];
+            if (r * g * b > 0.9) {
+                r = cAll.fonColorR;
+                g = cAll.fonColorG;
+                b = cAll.fonColorB;
             }
-            if (r*g*b>0.9){
-                r=cAll.fonColorR;
-                g=cAll.fonColorG;
-                b=cAll.fonColorB;
-            }
-            glColor3f(r,g,b);
-
-            glVertex2d(x+x0, y+y0);
-
+            glColor3f(r, g, b);
+            glVertex2d(x + x0, y + y0);
         }
     }
 }
-int check_buttons(float x0, float y0){
-    for (int i=0; i < BUTTONS_COUNT; i++) {
+
+int check_buttons(float x0, float y0) {
+    for (int i = 0; i < BUTTONS_COUNT; i++) {
         if ((x0 > buttons[i].x0) && (x0 < buttons[i].x0 + buttons[i].w) &&
             (y0 > buttons[i].y0) && (y0 < buttons[i].y0 + buttons[i].h) &&
-                (button_visible[i] == 1) ) {
+            (button_visible[i] == 1)) {
             return buttons[i].tool;
         }
     }
     return 0;
 }
 
-void draw_buttons(colorAll cAll){
+void draw_buttons(colorAll cAll) {
     glBegin(GL_POINTS);
-    for (int i=0; i < BUTTONS_COUNT; i++){
+    for (int i = 0; i < BUTTONS_COUNT; i++) {
         if (button_visible[i] == 1)
-            draw_but(i,buttons[i].x0,buttons[i].y0, cAll);
+            draw_but(i, buttons[i].x0, buttons[i].y0, cAll);
+
     }
     glEnd();
 }
 
-void init_buttons(colorAll cAll){
+void init_buttons(colorAll cAll) {
     float k = 4;
-    for (int i=0; i < BUTTONS_COUNT; i++){
+    for (int i = 0; i < BUTTONS_COUNT; i++) {
         buttons[i].tool = button_index[i];
         buttons[i].x0 = k;
         buttons[i].y0 = 4;
@@ -199,11 +165,10 @@ void init_buttons(colorAll cAll){
         buttons[i].h = 32;
         buttons[i].align = "left";
         buttons[i].name = button_name[i];
-        k+=36;
+        k += 36;
     }
     draw_buttons(cAll);
 }
-
 
 
 unsigned char bitextract(const unsigned int byte, const unsigned int mask) {
@@ -225,3 +190,16 @@ unsigned char bitextract(const unsigned int byte, const unsigned int mask) {
     return (byte & mask) >> maskPadding;
 }
 
+std::string currentDateToString(){
+    time_t rawtime;
+    struct tm * timeinfo;
+    char buffer[80];
+
+    time (&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    strftime(buffer,sizeof(buffer),"%Y-%m-%d_%H_%M_%S",timeinfo);
+    std::string str(buffer);
+
+    return str;
+}
