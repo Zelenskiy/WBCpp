@@ -50,7 +50,7 @@ std::list<figure> figures;
 point p;
 figure fig;
 
-int insert_screenshot();
+int insert_screenshot(std::string fileName);
 
 void close_app();
 
@@ -192,7 +192,7 @@ void Timer(int) {
         glutFullScreen();
         glutReshapeWindow(WinWid, WinHei - 60);
         glutShowWindow();
-        insert_screenshot();
+        insert_screenshot("file.bmp");
 //        glutShowWindow();
     }
 
@@ -317,7 +317,7 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
         int t = check_buttons(ax, m_s(ay));
         if (t > 0) {
             tool = t;
-        } else if (t == -1) { //Згортаємо
+        } else if (t == -20201) { //Згортаємо
             glutIconifyWindow();
         } else if (t == -2) { //Згортаємо
             close_app();
@@ -432,7 +432,7 @@ void on_keypress(unsigned char key, int x, int y) {
             test_draw(cAll);
             break;
         case 115:   //S
-            insert_screenshot();
+            insert_screenshot("file.bmp");
             break;
         case 108:   //L
             load_figures();
@@ -489,7 +489,7 @@ void close_app() {
     //архівуємо файли, формуємо унікальне ім'я
     std::string name_zip = "lessons/" + currentDateToString() + ".zip";
     std::string command = "zip -m " + name_zip + " tmp/*.*";
-    system(command.c_str());
+//    system(command.c_str());
     glutDestroyWindow(window);
 }
 
@@ -530,8 +530,8 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-int insert_screenshot() {
-    char *fileName = "file.bmp";
+int insert_screenshot(std::string fileName) {
+    //char *fileName = "file.bmp";
     // открываем файл
     std::ifstream fileStream(fileName, std::ifstream::binary);
     if (!fileStream) {
@@ -714,9 +714,13 @@ int insert_screenshot() {
     fig.file_image = name;
     figures.push_back(fig);
     // =============
-    std::cout << "Переміщаємо файл " << name << ".\n";
-    int n;
-    n = rename("file.bmp", ("tmp/" + name).c_str());
+
+    if (fileName != "tmp/" + name){
+        std::cout << "Переміщаємо файл " << name << ".\n";
+        int n;
+        n = rename(fileName.c_str(), ("tmp/" + name).c_str());
+    }
+
 //    n = remove("file.bmp");
     return 1;
 
@@ -724,9 +728,9 @@ int insert_screenshot() {
 
 
 void load_figures(){
-
+    texture.empty();
     std::ifstream file;
-    file.open("figs.json");
+    file.open("tmp/figs.json");
     if (file) {
         //Читаємо
         int num = 0;
@@ -786,6 +790,8 @@ void load_figures(){
                 std::string file_image = s;
                 s = trim(s,'\"');
                 fig.file_image = s;
+                //Підвантажуємо фото
+                insert_screenshot("tmp/"+fig.file_image);
                 continue;
             }
             n = s.find("\"p\"");
@@ -971,7 +977,8 @@ void load_figures(){
     } else {
     }
     file.close();
-    gl
+    Draw();
+
 
 }
 

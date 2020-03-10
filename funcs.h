@@ -12,7 +12,7 @@ typedef struct colorAll {
     float colorR=0;
     float colorG=0;
     float colorB=0;
-    float colorA=0;
+    float colorA=1.0;
     float fonColorR=0;
     float fonColorG=0;
     float fonColorB=0;

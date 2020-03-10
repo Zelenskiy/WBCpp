@@ -279,7 +279,7 @@ void draw_grid(int w, int h){
 
 void save_figures(std::list<figure> figures){
     std::string comma;
-    std::ofstream fout("figs.json");
+    std::ofstream fout("tmp/figs.json");
     fout << "{" << std::endl;
     fout << "    \"count\": "<<figures.size()<<"," << std::endl;
     fout << "    \"figures\": "<<"[" << std::endl;
