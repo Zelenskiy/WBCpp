@@ -146,7 +146,7 @@ void draw_but(int i, float x0, float y0, colorAll cAll) {
     }
 }
 
-int check_buttons(float x0, float y0) {
+int check_buttons(float x0, float y0, colorAll &tmpColorAll) {
     for (int i = 0; i < BUTTONS_COUNT; i++) {
         if ((x0 > buttons[i].x0) && (x0 < buttons[i].x0 + buttons[i].w) &&
             (y0 > buttons[i].y0) && (y0 < buttons[i].y0 + buttons[i].h) &&
@@ -154,10 +154,39 @@ int check_buttons(float x0, float y0) {
             return buttons[i].tool;
         }
     }
+    // --- перевірка вибору кольору ---
+    for (int i=0;i<5;i++){
+        if ((color_button[i][3]<x0)&&
+            (color_button[i][5]>x0)&&
+            (color_button[i][4]<y0)&&
+            (color_button[i][6]>y0)){
+
+            tmpColorAll.colorR = color_button[i][0];
+            tmpColorAll.colorG = color_button[i][1];
+            tmpColorAll.colorB = color_button[i][2];
+            return -100;
+        }
+
+    }
     return 0;
 }
 
+colorAll color_sel_btn [5];
+
+void draw_square(int x, int y, colorAll c){
+    int w = 48;
+    glColor3f(c.colorR, c.colorG, c.colorB);
+    glBegin(GL_QUADS);
+    glVertex2d(x, y);
+    glVertex2d(x, y+32);
+    glVertex2d(x+w, y+32);
+    glVertex2d(x+w, y);
+    glEnd();
+}
+
+
 void draw_buttons(colorAll cAll) {
+    //Малюємо кнопки з малюнками
     glBegin(GL_POINTS);
     for (int i = 0; i < BUTTONS_COUNT; i++) {
         if (button_visible[i] == 1)
@@ -165,6 +194,32 @@ void draw_buttons(colorAll cAll) {
 
     }
     glEnd();
+    //Малюємо кнопки без малюнків
+    //Кнопки вибору кольру
+    int btnColorCount = 5;
+    int x = 400; int y = 4;
+    for (int i=0;i<5;i++){
+        x+=50; int w = 48; int h = 32;
+        color_button[i][3] = x;
+        color_button[i][4] = y;
+        color_button[i][5] = x + w;
+        color_button[i][6] = y + h;
+        glColor3f(color_button[i][0], color_button[i][1], color_button[i][2]);
+        glBegin(GL_QUADS);
+        glVertex2d(x, y);
+        glVertex2d(x, y+32);
+        glVertex2d(x+w, y+32);
+        glVertex2d(x+w, y);
+        glEnd();
+    }
+
+
+
+    for (auto c: color_sel_btn){
+
+
+
+    }
 }
 
 void init_buttons(colorAll cAll) {

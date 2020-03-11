@@ -24,6 +24,8 @@ typedef struct colorAll {
     float fonColorA=0;
 } _colorAll;
 
+
+
 typedef struct border {
     float xmin=0;
     float ymin=0;
@@ -129,11 +131,11 @@ typedef struct {
 } RGBQUAD;
 
 // read bytes
-template<typename Type>
 
-void read(std::ifstream &fp, Type &result, std::size_t size) {
-    fp.read(reinterpret_cast<char *>(&result), size);
-}
+
+//void read(std::ifstream &fp, Type &result, std::size_t size) {
+//    fp.read(reinterpret_cast<char *>(&result), size);
+//}
 
 // bit extract
 unsigned char bitextract(const unsigned int byte, const unsigned int mask);
@@ -161,7 +163,7 @@ void test_draw(colorAll cAll);
 
 void init_buttons(colorAll cAll);
 
-int check_buttons(float x0, float y0);
+int check_buttons(float x0, float y0, colorAll &tmpColorAll);
 
 void draw_buttons(colorAll cAll);
 

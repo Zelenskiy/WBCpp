@@ -15,6 +15,7 @@
 #include <bits/stdc++.h>
 
 
+
 float WinWid = 800.0;
 float WinHei = 600.0;
 //float WinWid = 1366.0;
@@ -74,7 +75,7 @@ void load_figures();
 
 GLuint LoadTexture(char *FileName, int &w, int &h);
 
-void draw_texture(GLuint text_nun, border b);
+void draw_texture(GLuint text_nun, point p1, point p2, point p3, point p4);
 
 
 void figures_is_visible() {
@@ -123,13 +124,23 @@ void Render() {
                 b.ymin = ps[0].y - cy;
                 b.xmax = ps[1].x - cx;
                 b.ymax = ps[1].y - cy;
-                colorAll c;
-                c.colorR = 1.0;
-                c.colorG = 1.0;
-                c.colorB = 1.0;
+//                colorAll c;
+//                c.colorR = 1.0;
+//                c.colorG = 1.0;
+//                c.colorB = 1.0;
+                point p1,p2,p3,p4;
+                p1.x = ps[0].x - cx;
+                p1.y = ps[0].y - cy;
+                p2.x = ps[1].x - cx;
+                p2.y = ps[1].y - cy;
+                p3.x = ps[2].x - cx;
+                p3.y = ps[2].y - cy;
+                p4.x = ps[3].x - cx;
+                p4.y = ps[3].y - cy;
 
 
-                draw_texture(f.start_image, b);
+                draw_texture(f.start_image, p1,p2,p3,p4 );
+//                draw_texture(f.start_image, b);
 
             }
         }
@@ -175,6 +186,7 @@ void Draw() {
     if (isGrid) {
         draw_grid(WinWid, WinHei);
     }
+
     draw_buttons(cAll);
     glFlush();
 }
@@ -343,7 +355,8 @@ float m_s(float y) {
 void on_mouse_down_up(int button, int state, int ax, int ay) {
     if (m_s(ay) < 35) {
         // --- check buttons --------
-        int t = check_buttons(ax, m_s(ay));
+        colorAll tmpColorAll;
+        int t = check_buttons(ax, m_s(ay),tmpColorAll);
         if (t > 0) {
             tool = t;
         } else if (t == -1) { //Згортаємо
@@ -351,7 +364,14 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
         } else if (t == -2) { //Закриваємо
             close_app();
             glutDestroyWindow(window);
+        } else if (t < -10) { //Вибираємо колір
+            t *=-1;
+            cAll.colorR= tmpColorAll.colorR;
+            cAll.colorG= tmpColorAll.colorG;
+            cAll.colorB = tmpColorAll.colorB;
         }
+
+
     } else {
         // -------------------------
 
@@ -575,15 +595,41 @@ void insert_screenshot(std::string fileName) {
     int res = LoadTexture(cfileName, w, h);
     if (res == -1)
         return;
+    // Прокручення сторінки до вільного місця
+    cx = 0;
+    //шукаємо фігуру з найнижчою координатою
+    int y = 2000;
+    for (auto f:figures){
+        for (auto p: f.p){
+            if (p.y<y){
+                y = p.y;
+            }
+        }
+    }
+    cy = y - 50 - WinHei;
 
+
+    // ======================================
     float y0 = WinHei - h - 60; //400;
     float x0 = WinWid - w;
     figure fig;
+//    p.x = x0 + cx;
+//    p.y = y0 + cy;
+//    fig.p.push_back(p);
+//    p.x = x0 + cx + w;
+//    p.y = y0 + cy + h;
+//    fig.p.push_back(p);
     p.x = x0 + cx;
     p.y = y0 + cy;
     fig.p.push_back(p);
-    p.x = x0 + cx + w;
+    p.x = x0 + cx;
     p.y = y0 + cy + h;
+    fig.p.push_back(p);
+    p.x = x0 + cx+w;
+    p.y = y0 + cy+h;
+    fig.p.push_back(p);
+    p.x = x0 + cx + w;
+    p.y = y0 + cy;
     fig.p.push_back(p);
     ++id;
     fig.id = id;
@@ -607,18 +653,17 @@ void insert_screenshot(std::string fileName) {
     if (fileName != "tmp/" + name) {
         std::cout << "Переміщаємо файл " << name << ".\n";
         int n;
-        //TODO
+
         n = rename(fileName.c_str(), ("tmp/" + name).c_str());
     }
 
 
 }
 
-void draw_texture(GLuint text_nun, border b) {
+void _draw_texture(GLuint text_nun, border b) {
     /* Вывод изображения в окне */
     glEnable(GL_TEXTURE_2D);
     glColor3f(1.0, 1.0, 1.0);
-
     glBindTexture(GL_TEXTURE_2D, textura_id[text_nun]);
     glBegin(GL_QUADS);
     glTexCoord2d(0, 0);
@@ -632,202 +677,219 @@ void draw_texture(GLuint text_nun, border b) {
     glEnd();
     glDisable(GL_TEXTURE_2D);
 }
-
-int insert_screenshot_old(std::string fileName) {
-    //char *fileName = "file.bmp";
-    // открываем файл
-    std::ifstream fileStream(fileName, std::ifstream::binary);
-    if (!fileStream) {
-        std::cout << "Error opening file '" << fileName << "'." << std::endl;
-        return 0;
-    }
-
-
-    // заголовк изображения
-    BITMAPFILEHEADER fileHeader;
-    read(fileStream, fileHeader.bfType, sizeof(fileHeader.bfType));
-    read(fileStream, fileHeader.bfSize, sizeof(fileHeader.bfSize));
-    read(fileStream, fileHeader.bfReserved1, sizeof(fileHeader.bfReserved1));
-    read(fileStream, fileHeader.bfReserved2, sizeof(fileHeader.bfReserved2));
-    read(fileStream, fileHeader.bfOffBits, sizeof(fileHeader.bfOffBits));
-
-    if (fileHeader.bfType != 0x4D42) {
-        std::cout << "Error: '" << fileName << "' is not BMP file." << std::endl;
-        return 0;
-    }
-
-    // информация изображения
-    BITMAPINFOHEADER fileInfoHeader;
-    read(fileStream, fileInfoHeader.biSize, sizeof(fileInfoHeader.biSize));
-
-    // bmp core
-    if (fileInfoHeader.biSize >= 12) {
-        read(fileStream, fileInfoHeader.biWidth, sizeof(fileInfoHeader.biWidth));
-        read(fileStream, fileInfoHeader.biHeight, sizeof(fileInfoHeader.biHeight));
-        read(fileStream, fileInfoHeader.biPlanes, sizeof(fileInfoHeader.biPlanes));
-        read(fileStream, fileInfoHeader.biBitCount, sizeof(fileInfoHeader.biBitCount));
-    }
-
-    // получаем информацию о битности
-    int colorsCount = fileInfoHeader.biBitCount >> 3;
-    if (colorsCount < 3) {
-        colorsCount = 3;
-    }
-
-    int bitsOnColor = fileInfoHeader.biBitCount / colorsCount;
-    int maskValue = (1 << bitsOnColor) - 1;
-
-    // bmp v1
-    if (fileInfoHeader.biSize >= 40) {
-        read(fileStream, fileInfoHeader.biCompression, sizeof(fileInfoHeader.biCompression));
-        read(fileStream, fileInfoHeader.biSizeImage, sizeof(fileInfoHeader.biSizeImage));
-        read(fileStream, fileInfoHeader.biXPelsPerMeter, sizeof(fileInfoHeader.biXPelsPerMeter));
-        read(fileStream, fileInfoHeader.biYPelsPerMeter, sizeof(fileInfoHeader.biYPelsPerMeter));
-        read(fileStream, fileInfoHeader.biClrUsed, sizeof(fileInfoHeader.biClrUsed));
-        read(fileStream, fileInfoHeader.biClrImportant, sizeof(fileInfoHeader.biClrImportant));
-    }
-
-    // bmp v2
-    fileInfoHeader.biRedMask = 0;
-    fileInfoHeader.biGreenMask = 0;
-    fileInfoHeader.biBlueMask = 0;
-
-    if (fileInfoHeader.biSize >= 52) {
-        read(fileStream, fileInfoHeader.biRedMask, sizeof(fileInfoHeader.biRedMask));
-        read(fileStream, fileInfoHeader.biGreenMask, sizeof(fileInfoHeader.biGreenMask));
-        read(fileStream, fileInfoHeader.biBlueMask, sizeof(fileInfoHeader.biBlueMask));
-    }
-
-    // если маска не задана, то ставим маску по умолчанию
-    if (fileInfoHeader.biRedMask == 0 || fileInfoHeader.biGreenMask == 0 || fileInfoHeader.biBlueMask == 0) {
-        fileInfoHeader.biRedMask = maskValue << (bitsOnColor * 2);
-        fileInfoHeader.biGreenMask = maskValue << bitsOnColor;
-        fileInfoHeader.biBlueMask = maskValue;
-    }
-
-    // bmp v3
-    if (fileInfoHeader.biSize >= 56) {
-        read(fileStream, fileInfoHeader.biAlphaMask, sizeof(fileInfoHeader.biAlphaMask));
-    } else {
-        fileInfoHeader.biAlphaMask = maskValue << (bitsOnColor * 3);
-    }
-
-    // bmp v4
-    if (fileInfoHeader.biSize >= 108) {
-        read(fileStream, fileInfoHeader.biCSType, sizeof(fileInfoHeader.biCSType));
-        read(fileStream, fileInfoHeader.biEndpoints, sizeof(fileInfoHeader.biEndpoints));
-        read(fileStream, fileInfoHeader.biGammaRed, sizeof(fileInfoHeader.biGammaRed));
-        read(fileStream, fileInfoHeader.biGammaGreen, sizeof(fileInfoHeader.biGammaGreen));
-        read(fileStream, fileInfoHeader.biGammaBlue, sizeof(fileInfoHeader.biGammaBlue));
-    }
-
-    // bmp v5
-    if (fileInfoHeader.biSize >= 124) {
-        read(fileStream, fileInfoHeader.biIntent, sizeof(fileInfoHeader.biIntent));
-        read(fileStream, fileInfoHeader.biProfileData, sizeof(fileInfoHeader.biProfileData));
-        read(fileStream, fileInfoHeader.biProfileSize, sizeof(fileInfoHeader.biProfileSize));
-        read(fileStream, fileInfoHeader.biReserved, sizeof(fileInfoHeader.biReserved));
-    }
-
-    // проверка на поддерку этой версии формата
-    if (fileInfoHeader.biSize != 12 && fileInfoHeader.biSize != 40 && fileInfoHeader.biSize != 52 &&
-        fileInfoHeader.biSize != 56 && fileInfoHeader.biSize != 108 && fileInfoHeader.biSize != 124) {
-        std::cout << "Error: Unsupported BMP format." << std::endl;
-        return 0;
-    }
-
-    if (fileInfoHeader.biBitCount != 16 && fileInfoHeader.biBitCount != 24 && fileInfoHeader.biBitCount != 32) {
-        std::cout << "Error: Unsupported BMP bit count." << std::endl;
-        return 0;
-    }
-
-    if (fileInfoHeader.biCompression != 0 && fileInfoHeader.biCompression != 3) {
-        std::cout << "Error: Unsupported BMP compression." << std::endl;
-        return 0;
-    }
-
-    // rgb info
-    RGBQUAD **rgbInfo = new RGBQUAD *[fileInfoHeader.biHeight];
-
-    for (unsigned int i = 0; i < fileInfoHeader.biHeight; i++) {
-        rgbInfo[i] = new RGBQUAD[fileInfoHeader.biWidth];
-    }
-
-    // определение размера отступа в конце каждой строки
-    int linePadding = ((fileInfoHeader.biWidth * (fileInfoHeader.biBitCount / 8)) % 4) & 3;
-
-    // чтение
-    unsigned int bufer;
-
-    for (unsigned int i = 0; i < fileInfoHeader.biHeight; i++) {
-        for (unsigned int j = 0; j < fileInfoHeader.biWidth; j++) {
-            read(fileStream, bufer, fileInfoHeader.biBitCount / 8);
-
-            rgbInfo[i][j].rgbRed = bitextract(bufer, fileInfoHeader.biRedMask);
-            rgbInfo[i][j].rgbGreen = bitextract(bufer, fileInfoHeader.biGreenMask);
-            rgbInfo[i][j].rgbBlue = bitextract(bufer, fileInfoHeader.biBlueMask);
-            rgbInfo[i][j].rgbReserved = bitextract(bufer, fileInfoHeader.biAlphaMask);
-        }
-        fileStream.seekg(linePadding, std::ios_base::cur);
-    }
-    int w, h, x0, y0;
-    w = fileInfoHeader.biWidth;
-    h = fileInfoHeader.biHeight;
-    y0 = WinHei - h - 60; //400;
-    x0 = WinWid - w;
-    color_t c;
-
-    // вывод
-
-    // ============
-    figure fig;
-    p.x = x0 + cx;
-    p.y = y0 + cy;
-    fig.p.push_back(p);
-    p.x = x0 + cx + w;
-    p.y = y0 + cy + h;
-    fig.p.push_back(p);
-    ++id;
-    fig.id = id;
-    fig.center.x = (X0 + X0 + w) / 2.0 + cx;
-    fig.center.y = (Y0 + Y0 + h) / 2.0 + cy;
-    fig.name = "image";
-    fig.fordel = false;
-    fig.visible = true;
-    fig.color = cAll;
-    fig.thickness = 0;
-
-    fig.extrem = border_polyline(fig.p);
-    fig.start_image = texture.size();
-
-    for (unsigned int i = 0; i < fileInfoHeader.biHeight; i++) {
-        for (unsigned int j = 0; j < fileInfoHeader.biWidth; j++) {
-            c.y = y0 + i + cy;
-            c.x = j + x0 + cx;
-            c.b = rgbInfo[i][j].rgbRed / 256.0;
-            c.g = rgbInfo[i][j].rgbGreen / 256.0;
-            c.r = rgbInfo[i][j].rgbBlue / 256.0;
-            texture.push_back(c);
-
-        }
-    }
-    fig.end_image = texture.size();
-    //Вигадуємо унікальне ім'я файлу
-    std::string name = currentDateToString() + ".bmp";
-    fig.file_image = name;
-    figures.push_back(fig);
-    // =============
-
-    if (fileName != "tmp/" + name) {
-        std::cout << "Переміщаємо файл " << name << ".\n";
-        int n;
-        n = rename(fileName.c_str(), ("tmp/" + name).c_str());
-    }
-
-//    n = remove("file.bmp");
-    return 1;
-
+void draw_texture(GLuint text_nun, point p1, point p2, point p3, point p4) {
+    /* Вывод изображения в окне */
+    glEnable(GL_TEXTURE_2D);
+    glColor3f(1.0, 1.0, 1.0);
+    glBindTexture(GL_TEXTURE_2D, textura_id[text_nun]);
+    glBegin(GL_QUADS);
+    glTexCoord2d(0, 0);
+    glVertex2d(p1.x, p1.y);
+    glTexCoord2d(0, 1);
+    glVertex2d(p2.x, p2.y);
+    glTexCoord2d(1, 1);
+    glVertex2d(p3.x, p3.y);
+    glTexCoord2d(1, 0);
+    glVertex2d(p4.x, p4.y);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
 }
+
+//int insert_screenshot_old(std::string fileName) {
+//    //char *fileName = "file.bmp";
+//    // открываем файл
+//    std::ifstream fileStream(fileName, std::ifstream::binary);
+//    if (!fileStream) {
+//        std::cout << "Error opening file '" << fileName << "'." << std::endl;
+//        return 0;
+//    }
+//
+//
+//    // заголовк изображения
+//    BITMAPFILEHEADER fileHeader;
+//    read(fileStream, fileHeader.bfType, sizeof(fileHeader.bfType));
+//    read(fileStream, fileHeader.bfSize, sizeof(fileHeader.bfSize));
+//    read(fileStream, fileHeader.bfReserved1, sizeof(fileHeader.bfReserved1));
+//    read(fileStream, fileHeader.bfReserved2, sizeof(fileHeader.bfReserved2));
+//    read(fileStream, fileHeader.bfOffBits, sizeof(fileHeader.bfOffBits));
+//
+//    if (fileHeader.bfType != 0x4D42) {
+//        std::cout << "Error: '" << fileName << "' is not BMP file." << std::endl;
+//        return 0;
+//    }
+//
+//    // информация изображения
+//    BITMAPINFOHEADER fileInfoHeader;
+//    read(fileStream, fileInfoHeader.biSize, sizeof(fileInfoHeader.biSize));
+//
+//    // bmp core
+//    if (fileInfoHeader.biSize >= 12) {
+//        read(fileStream, fileInfoHeader.biWidth, sizeof(fileInfoHeader.biWidth));
+//        read(fileStream, fileInfoHeader.biHeight, sizeof(fileInfoHeader.biHeight));
+//        read(fileStream, fileInfoHeader.biPlanes, sizeof(fileInfoHeader.biPlanes));
+//        read(fileStream, fileInfoHeader.biBitCount, sizeof(fileInfoHeader.biBitCount));
+//    }
+//
+//    // получаем информацию о битности
+//    int colorsCount = fileInfoHeader.biBitCount >> 3;
+//    if (colorsCount < 3) {
+//        colorsCount = 3;
+//    }
+//
+//    int bitsOnColor = fileInfoHeader.biBitCount / colorsCount;
+//    int maskValue = (1 << bitsOnColor) - 1;
+//
+//    // bmp v1
+//    if (fileInfoHeader.biSize >= 40) {
+//        read(fileStream, fileInfoHeader.biCompression, sizeof(fileInfoHeader.biCompression));
+//        read(fileStream, fileInfoHeader.biSizeImage, sizeof(fileInfoHeader.biSizeImage));
+//        read(fileStream, fileInfoHeader.biXPelsPerMeter, sizeof(fileInfoHeader.biXPelsPerMeter));
+//        read(fileStream, fileInfoHeader.biYPelsPerMeter, sizeof(fileInfoHeader.biYPelsPerMeter));
+//        read(fileStream, fileInfoHeader.biClrUsed, sizeof(fileInfoHeader.biClrUsed));
+//        read(fileStream, fileInfoHeader.biClrImportant, sizeof(fileInfoHeader.biClrImportant));
+//    }
+//
+//    // bmp v2
+//    fileInfoHeader.biRedMask = 0;
+//    fileInfoHeader.biGreenMask = 0;
+//    fileInfoHeader.biBlueMask = 0;
+//
+//    if (fileInfoHeader.biSize >= 52) {
+//        read(fileStream, fileInfoHeader.biRedMask, sizeof(fileInfoHeader.biRedMask));
+//        read(fileStream, fileInfoHeader.biGreenMask, sizeof(fileInfoHeader.biGreenMask));
+//        read(fileStream, fileInfoHeader.biBlueMask, sizeof(fileInfoHeader.biBlueMask));
+//    }
+//
+//    // если маска не задана, то ставим маску по умолчанию
+//    if (fileInfoHeader.biRedMask == 0 || fileInfoHeader.biGreenMask == 0 || fileInfoHeader.biBlueMask == 0) {
+//        fileInfoHeader.biRedMask = maskValue << (bitsOnColor * 2);
+//        fileInfoHeader.biGreenMask = maskValue << bitsOnColor;
+//        fileInfoHeader.biBlueMask = maskValue;
+//    }
+//
+//    // bmp v3
+//    if (fileInfoHeader.biSize >= 56) {
+//        read(fileStream, fileInfoHeader.biAlphaMask, sizeof(fileInfoHeader.biAlphaMask));
+//    } else {
+//        fileInfoHeader.biAlphaMask = maskValue << (bitsOnColor * 3);
+//    }
+//
+//    // bmp v4
+//    if (fileInfoHeader.biSize >= 108) {
+//        read(fileStream, fileInfoHeader.biCSType, sizeof(fileInfoHeader.biCSType));
+//        read(fileStream, fileInfoHeader.biEndpoints, sizeof(fileInfoHeader.biEndpoints));
+//        read(fileStream, fileInfoHeader.biGammaRed, sizeof(fileInfoHeader.biGammaRed));
+//        read(fileStream, fileInfoHeader.biGammaGreen, sizeof(fileInfoHeader.biGammaGreen));
+//        read(fileStream, fileInfoHeader.biGammaBlue, sizeof(fileInfoHeader.biGammaBlue));
+//    }
+//
+//    // bmp v5
+//    if (fileInfoHeader.biSize >= 124) {
+//        read(fileStream, fileInfoHeader.biIntent, sizeof(fileInfoHeader.biIntent));
+//        read(fileStream, fileInfoHeader.biProfileData, sizeof(fileInfoHeader.biProfileData));
+//        read(fileStream, fileInfoHeader.biProfileSize, sizeof(fileInfoHeader.biProfileSize));
+//        read(fileStream, fileInfoHeader.biReserved, sizeof(fileInfoHeader.biReserved));
+//    }
+//
+//    // проверка на поддерку этой версии формата
+//    if (fileInfoHeader.biSize != 12 && fileInfoHeader.biSize != 40 && fileInfoHeader.biSize != 52 &&
+//        fileInfoHeader.biSize != 56 && fileInfoHeader.biSize != 108 && fileInfoHeader.biSize != 124) {
+//        std::cout << "Error: Unsupported BMP format." << std::endl;
+//        return 0;
+//    }
+//
+//    if (fileInfoHeader.biBitCount != 16 && fileInfoHeader.biBitCount != 24 && fileInfoHeader.biBitCount != 32) {
+//        std::cout << "Error: Unsupported BMP bit count." << std::endl;
+//        return 0;
+//    }
+//
+//    if (fileInfoHeader.biCompression != 0 && fileInfoHeader.biCompression != 3) {
+//        std::cout << "Error: Unsupported BMP compression." << std::endl;
+//        return 0;
+//    }
+//
+//    // rgb info
+//    RGBQUAD **rgbInfo = new RGBQUAD *[fileInfoHeader.biHeight];
+//
+//    for (unsigned int i = 0; i < fileInfoHeader.biHeight; i++) {
+//        rgbInfo[i] = new RGBQUAD[fileInfoHeader.biWidth];
+//    }
+//
+//    // определение размера отступа в конце каждой строки
+//    int linePadding = ((fileInfoHeader.biWidth * (fileInfoHeader.biBitCount / 8)) % 4) & 3;
+//
+//    // чтение
+//    unsigned int bufer;
+//
+//    for (unsigned int i = 0; i < fileInfoHeader.biHeight; i++) {
+//        for (unsigned int j = 0; j < fileInfoHeader.biWidth; j++) {
+//            read(fileStream, bufer, fileInfoHeader.biBitCount / 8);
+//
+//            rgbInfo[i][j].rgbRed = bitextract(bufer, fileInfoHeader.biRedMask);
+//            rgbInfo[i][j].rgbGreen = bitextract(bufer, fileInfoHeader.biGreenMask);
+//            rgbInfo[i][j].rgbBlue = bitextract(bufer, fileInfoHeader.biBlueMask);
+//            rgbInfo[i][j].rgbReserved = bitextract(bufer, fileInfoHeader.biAlphaMask);
+//        }
+//        fileStream.seekg(linePadding, std::ios_base::cur);
+//    }
+//    int w, h, x0, y0;
+//    w = fileInfoHeader.biWidth;
+//    h = fileInfoHeader.biHeight;
+//    y0 = WinHei - h - 60; //400;
+//    x0 = WinWid - w;
+//    color_t c;
+//
+//    // вывод
+//
+//    // ============
+//    figure fig;
+//    p.x = x0 + cx;
+//    p.y = y0 + cy;
+//    fig.p.push_back(p);
+//    p.x = x0 + cx + w;
+//    p.y = y0 + cy + h;
+//    fig.p.push_back(p);
+//    ++id;
+//    fig.id = id;
+//    fig.center.x = (X0 + X0 + w) / 2.0 + cx;
+//    fig.center.y = (Y0 + Y0 + h) / 2.0 + cy;
+//    fig.name = "image";
+//    fig.fordel = false;
+//    fig.visible = true;
+//    fig.color = cAll;
+//    fig.thickness = 0;
+//
+//    fig.extrem = border_polyline(fig.p);
+//    fig.start_image = texture.size();
+//
+//    for (unsigned int i = 0; i < fileInfoHeader.biHeight; i++) {
+//        for (unsigned int j = 0; j < fileInfoHeader.biWidth; j++) {
+//            c.y = y0 + i + cy;
+//            c.x = j + x0 + cx;
+//            c.b = rgbInfo[i][j].rgbRed / 256.0;
+//            c.g = rgbInfo[i][j].rgbGreen / 256.0;
+//            c.r = rgbInfo[i][j].rgbBlue / 256.0;
+//            texture.push_back(c);
+//
+//        }
+//    }
+//    fig.end_image = texture.size();
+//    //Вигадуємо унікальне ім'я файлу
+//    std::string name = currentDateToString() + ".bmp";
+//    fig.file_image = name;
+//    figures.push_back(fig);
+//    // =============
+//
+//    if (fileName != "tmp/" + name) {
+//        std::cout << "Переміщаємо файл " << name << ".\n";
+//        int n;
+//        n = rename(fileName.c_str(), ("tmp/" + name).c_str());
+//    }
+//
+////    n = remove("file.bmp");
+//    return 1;
+//
+//}
 
 
 GLuint LoadTexture(char *FileName, int &w, int &h) {
