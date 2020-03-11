@@ -4,7 +4,8 @@
 #include <map>
 #include <list>
 
-#include <GL/glut.h>
+#include <GL/freeglut.h>
+#include <GL/glu.h>
 #include <math.h>
 #include "funcs.h"
 #include <fstream>
@@ -38,6 +39,19 @@ float old_X;
 float old_Y;
 bool isGrid = false;
 
+struct textura_struct {
+    int W;
+    int H;
+    unsigned char *Image;
+} get_textura;
+
+//std::vector<textura_struct> textures;
+//
+//
+//GLuint textura_count = 0;
+
+std::vector<GLuint> textura_id;
+
 
 std::vector<color_t> texture;
 
@@ -50,13 +64,17 @@ std::list<figure> figures;
 point p;
 figure fig;
 
-int insert_screenshot(std::string fileName);
+void insert_screenshot(std::string fileName);
 
 void close_app();
 
 void draw_image(int start, int end);
 
 void load_figures();
+
+GLuint LoadTexture(char *FileName, int &w, int &h);
+
+void draw_texture(GLuint text_nun, border b);
 
 
 void figures_is_visible() {
@@ -99,7 +117,20 @@ void Render() {
 //                    draw_line(XX0 - cx, YY0 - cy, XX - cx, YY - cy, f.thickness * 2, f.color);
 //                    line(XX0, YY0, XX, YY, f.thickness, f.color);
             } else if (f.name == "image") {
-                draw_image(f.start_image, f.end_image);
+                border b;
+                points ps = f.p;
+                b.xmin = ps[0].x - cx;
+                b.ymin = ps[0].y - cy;
+                b.xmax = ps[1].x - cx;
+                b.ymax = ps[1].y - cy;
+                colorAll c;
+                c.colorR = 1.0;
+                c.colorG = 1.0;
+                c.colorB = 1.0;
+
+
+                draw_texture(f.start_image, b);
+
             }
         }
 
@@ -282,7 +313,6 @@ void init_flags() {
     fout.close();
 
 
-
 }
 
 void Initialize() {
@@ -310,17 +340,17 @@ float m_s(float y) {
 }
 
 
-
 void on_mouse_down_up(int button, int state, int ax, int ay) {
     if (m_s(ay) < 35) {
         // --- check buttons --------
         int t = check_buttons(ax, m_s(ay));
         if (t > 0) {
             tool = t;
-        } else if (t == -20201) { //Згортаємо
+        } else if (t == -1) { //Згортаємо
             glutIconifyWindow();
-        } else if (t == -2) { //Згортаємо
+        } else if (t == -2) { //Закриваємо
             close_app();
+            glutDestroyWindow(window);
         }
     } else {
         // -------------------------
@@ -374,7 +404,7 @@ void on_mouse_drag(int ax, int ay) {
                 break;
             case 2:                             // Гумка
 //                draw_circle(X0, Y0, erWidth+10, cAll.fonColorR, cAll.fonColorG, cAll.fonColorB,0,1);
-                draw_circle(X0, Y0, erWidth, cAll.fonColorR, cAll.fonColorG, cAll.fonColorB,0,1);
+                draw_circle(X0, Y0, erWidth, cAll.fonColorR, cAll.fonColorG, cAll.fonColorB, 0, 1);
 //                draw_circle(X0, Y0, erWidth, 0.8, 1.0, 0.8,1);
                 for (figure &f:figures) {
                     border c = f.extrem;
@@ -417,7 +447,7 @@ void on_keypress(unsigned char key, int x, int y) {
         case 27:
             std::cout << "ESC" << std::endl;
             close_app();
-
+            glutDestroyWindow(window);
             break;
         case 112:
             tool = 1;
@@ -488,9 +518,10 @@ void close_app() {
     write_ini();
     //архівуємо файли, формуємо унікальне ім'я
     std::string name_zip = "lessons/" + currentDateToString() + ".zip";
+
     std::string command = "zip -m " + name_zip + " tmp/*.*";
 //    system(command.c_str());
-    glutDestroyWindow(window);
+
 }
 
 void on_window_status(int status) {
@@ -501,6 +532,11 @@ void on_window_status(int status) {
         fout.close();
     }
 
+}
+
+void on_exit() {
+    close_app();
+    printf("Good by");
 }
 
 int main(int argc, char **argv) {
@@ -518,6 +554,7 @@ int main(int argc, char **argv) {
     glutMouseFunc(on_mouse_down_up);
     glutMotionFunc(on_mouse_drag);
     glutWindowStatusFunc(on_window_status);
+    glutCloseFunc(on_exit);
 
 
     glutTimerFunc(2000, Timer, 0);
@@ -527,10 +564,76 @@ int main(int argc, char **argv) {
 //    glutIconifyWindow();
 //    glutShowWindow();
     glutMainLoop();
+//
     return 0;
 }
 
-int insert_screenshot(std::string fileName) {
+void insert_screenshot(std::string fileName) {
+    char *cfileName = const_cast<char *>(fileName.c_str());
+    int w = 0;
+    int h = 0;
+    int res = LoadTexture(cfileName, w, h);
+    if (res == -1)
+        return;
+
+    float y0 = WinHei - h - 60; //400;
+    float x0 = WinWid - w;
+    figure fig;
+    p.x = x0 + cx;
+    p.y = y0 + cy;
+    fig.p.push_back(p);
+    p.x = x0 + cx + w;
+    p.y = y0 + cy + h;
+    fig.p.push_back(p);
+    ++id;
+    fig.id = id;
+    fig.center.x = (X0 + X0 + w) / 2.0 + cx;
+    fig.center.y = (Y0 + Y0 + h) / 2.0 + cy;
+    fig.name = "image";
+    fig.fordel = false;
+    fig.visible = true;
+    fig.color = cAll;
+    fig.thickness = 0;
+    fig.extrem = border_polyline(fig.p);
+    fig.start_image = textura_id.size() - 1;
+    fig.end_image = 0;
+
+
+    //Вигадуємо унікальне ім'я файлу
+    std::string name = currentDateToString() + ".bmp";
+    fig.file_image = name;
+    figures.push_back(fig);
+    // =============
+    if (fileName != "tmp/" + name) {
+        std::cout << "Переміщаємо файл " << name << ".\n";
+        int n;
+        //TODO
+        n = rename(fileName.c_str(), ("tmp/" + name).c_str());
+    }
+
+
+}
+
+void draw_texture(GLuint text_nun, border b) {
+    /* Вывод изображения в окне */
+    glEnable(GL_TEXTURE_2D);
+    glColor3f(1.0, 1.0, 1.0);
+
+    glBindTexture(GL_TEXTURE_2D, textura_id[text_nun]);
+    glBegin(GL_QUADS);
+    glTexCoord2d(0, 0);
+    glVertex2d(b.xmin, b.ymin);
+    glTexCoord2d(0, 1);
+    glVertex2d(b.xmin, b.ymax);
+    glTexCoord2d(1, 1);
+    glVertex2d(b.xmax, b.ymax);
+    glTexCoord2d(1, 0);
+    glVertex2d(b.xmax, b.ymin);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+}
+
+int insert_screenshot_old(std::string fileName) {
     //char *fileName = "file.bmp";
     // открываем файл
     std::ifstream fileStream(fileName, std::ifstream::binary);
@@ -715,7 +818,7 @@ int insert_screenshot(std::string fileName) {
     figures.push_back(fig);
     // =============
 
-    if (fileName != "tmp/" + name){
+    if (fileName != "tmp/" + name) {
         std::cout << "Переміщаємо файл " << name << ".\n";
         int n;
         n = rename(fileName.c_str(), ("tmp/" + name).c_str());
@@ -727,7 +830,54 @@ int insert_screenshot(std::string fileName) {
 }
 
 
-void load_figures(){
+GLuint LoadTexture(char *FileName, int &w, int &h) {
+
+    FILE *F;
+    /* Открываем файл */
+    if ((F = fopen(FileName, "rb")) == NULL)
+        return -1;
+
+
+    /*Перемещаемся в bmp-файле на нужную позицию, и считываем ширину и длинну */
+    fseek(F, 18, SEEK_SET);
+    fread(&(get_textura.W), 2, 1, F);
+    fseek(F, 2, SEEK_CUR);
+    fread(&(get_textura.H), 2, 1, F);
+
+
+    w = get_textura.W;
+    h = get_textura.H;
+    printf("%d x %d\n", get_textura.W, get_textura.H);
+
+    /* Выделяем память под изображение. Если память не выделилась, закрываем файл и выходим с ошибкой */
+    if ((get_textura.Image = (unsigned char *) malloc(sizeof(unsigned char) * 3 * get_textura.W * get_textura.H)) ==
+        NULL) {
+        fclose(F);
+        return -1;
+    }
+    /* Считываем изображение в память по 3 бита, то бишь RGB для каждого пикселя */
+    fseek(F, 30, SEEK_CUR);
+    fread(get_textura.Image, 3, get_textura.W * get_textura.H, F);
+
+    //http://www.opengl.org.ru/books/open_gl/chapter5.4.html
+
+    textura_id.push_back(1);
+
+    glGenTextures(1, &textura_id[textura_id.size() - 1]);
+    glBindTexture(GL_TEXTURE_2D, textura_id[textura_id.size() - 1]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, get_textura.W, get_textura.H, 0, GL_BGR,
+                 GL_UNSIGNED_BYTE, get_textura.Image);
+
+    free(get_textura.Image);
+    fclose(F);
+
+    return 1;
+}
+
+
+void load_figures() {
     texture.empty();
     std::ifstream file;
     file.open("tmp/figs.json");
@@ -742,85 +892,85 @@ void load_figures(){
             std::getline(file, s);
             s = trim(s);
             int n = s.find("\"count\"");
-            if (n!=-1) {
-                s = right_sym(s,":");
-                s = trim(s,',');
+            if (n != -1) {
+                s = right_sym(s, ":");
+                s = trim(s, ',');
                 count = std::stoi(s);
                 id = count;
-                std::cout<<"count="<<count<<std::endl;
+                std::cout << "count=" << count << std::endl;
                 continue;
             }
             n = s.find("\"id\"");
-            if (n!=-1) {
-                s = right_sym(s,":");
-                s = trim(s,',');
+            if (n != -1) {
+                s = right_sym(s, ":");
+                s = trim(s, ',');
                 int id = std::stoi(s);
                 fig.id = id;
                 continue;
             }
             n = s.find("\"fordel\"");
-            if (n!=-1) {
-                s = right_sym(s,":");
-                s = trim(s,',');
+            if (n != -1) {
+                s = right_sym(s, ":");
+                s = trim(s, ',');
                 bool fordel = std::stoi(s);
                 fig.fordel = fordel;
                 continue;
             }
             n = s.find("\"visible\"");
-            if (n!=-1) {
-                s = right_sym(s,":");
-                s = trim(s,',');
+            if (n != -1) {
+                s = right_sym(s, ":");
+                s = trim(s, ',');
                 bool visible = std::stoi(s);
                 fig.visible = visible;
                 continue;
             }
             n = s.find("\"name\"");
-            if (n!=-1) {
-                s = right_sym(s,":");
-                s = trim(s,',');
+            if (n != -1) {
+                s = right_sym(s, ":");
+                s = trim(s, ',');
                 std::string name = s;
-                s = trim(s,'\"');
+                s = trim(s, '\"');
                 fig.name = s;
                 continue;
             }
             n = s.find("\"file_image\"");
-            if (n!=-1) {
-                s = right_sym(s,":");
-                s = trim(s,',');
+            if (n != -1) {
+                s = right_sym(s, ":");
+                s = trim(s, ',');
                 std::string file_image = s;
-                s = trim(s,'\"');
+                s = trim(s, '\"');
                 fig.file_image = s;
                 //Підвантажуємо фото
-                insert_screenshot("tmp/"+fig.file_image);
+                insert_screenshot("tmp/" + fig.file_image);
                 continue;
             }
             n = s.find("\"p\"");
-            if (n!=-1) {
+            if (n != -1) {
                 //Тут обробляєм масив точок
                 points ps;
                 std::getline(file, s);
                 s = trim(s);
-                float x,y;
+                float x, y;
                 point p;
-                while (s != "],"){
+                while (s != "],") {
                     std::getline(file, s);
                     s = trim(s);
                     n = s.find("\"x\"");
-                    if (n!=-1) {
-                        s = right_sym(s,":");
-                        s = trim(s,',');
+                    if (n != -1) {
+                        s = right_sym(s, ":");
+                        s = trim(s, ',');
                         x = std::stof(s);
                         continue;
                     }
                     n = s.find("\"y\"");
-                    if (n!=-1) {
-                        s = right_sym(s,":");
-                        s = trim(s,',');
+                    if (n != -1) {
+                        s = right_sym(s, ":");
+                        s = trim(s, ',');
                         y = std::stof(s);
                         continue;
                     }
                     n = s.find("}");
-                    if (n!=-1) {
+                    if (n != -1) {
                         p.x = x;
                         p.y = y;
                         ps.push_back(p);
@@ -832,9 +982,9 @@ void load_figures(){
                 continue;
             }
             n = s.find("\"center\"");
-            if (n!=-1) {
-                float x,y;
-                while ((s != "}")&&(s != "},")) {
+            if (n != -1) {
+                float x, y;
+                while ((s != "}") && (s != "},")) {
                     std::getline(file, s);
                     s = trim(s);
                     n = s.find("\"x\"");
@@ -855,16 +1005,16 @@ void load_figures(){
                 fig.center.y = y;
             }
             n = s.find("\"thickness\"");
-            if (n!=-1) {
-                s = right_sym(s,":");
-                s = trim(s,',');
+            if (n != -1) {
+                s = right_sym(s, ":");
+                s = trim(s, ',');
                 fig.thickness = std::stoi(s);
                 continue;
             }
             n = s.find("\"extrem\"");
-            if (n!=-1) {
-                float xmin,ymin,xmax,ymax;
-                while ((s != "}")&&(s != "},")) {
+            if (n != -1) {
+                float xmin, ymin, xmax, ymax;
+                while ((s != "}") && (s != "},")) {
                     std::getline(file, s);
                     s = trim(s);
                     n = s.find("\"xmin\"");
@@ -900,9 +1050,9 @@ void load_figures(){
                 fig.extrem.ymax = ymax;
             }
             n = s.find("\"color\"");
-            if (n!=-1) {
-                float colorR,colorG,colorB,colorA, fonColorR, fonColorG, fonColorB;
-                while ((s != "}")&&(s != "},")) {
+            if (n != -1) {
+                float colorR, colorG, colorB, colorA, fonColorR, fonColorG, fonColorB;
+                while ((s != "}") && (s != "},")) {
                     std::getline(file, s);
                     s = trim(s);
                     n = s.find("\"colorR\"");
@@ -959,16 +1109,16 @@ void load_figures(){
                 fig.color.fonColorB = fonColorB;
             }
             n = s.find("\"start_image\"");
-            if (n!=-1) {
-                s = right_sym(s,":");
-                s = trim(s,',');
+            if (n != -1) {
+                s = right_sym(s, ":");
+                s = trim(s, ',');
                 fig.start_image = std::stoi(s);
                 continue;
             }
             n = s.find("\"end_image\"");
-            if (n!=-1) {
-                s = right_sym(s,":");
-                s = trim(s,',');
+            if (n != -1) {
+                s = right_sym(s, ":");
+                s = trim(s, ',');
                 fig.end_image = std::stoi(s);
                 figures.push_back(fig);
             }

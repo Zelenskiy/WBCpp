@@ -8,6 +8,11 @@
 #include <vector>
 
 
+
+
+
+
+
 typedef struct colorAll {
     float colorR=0;
     float colorG=0;
@@ -57,7 +62,7 @@ typedef struct figure {
     int thickness = 2;
     border extrem;
     colorAll color;
-    int start_image = 0;
+    GLuint start_image = 0;
     int end_image = 0;
 } _figure;
 
@@ -178,5 +183,7 @@ void draw_grid(int w, int h);
 void save_figures(std::list<figure> figures);
 
 std::string trim (std::string s, char c);
+
+//void draw_texture(GLuint textura_id, border b);
 
 #endif //WBCPP_FUNCS_H
