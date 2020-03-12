@@ -11,6 +11,7 @@
 #include "buttons.h"
 #include <ctime>
 #include <fstream>
+#include <sstream>
 
 
 using namespace std;
@@ -155,15 +156,14 @@ void set_color_button(float col[5][3]) {
 }
 
 
-void draw_rectangle(float x0, float y0, float r, float g, float b){
+void draw_rectangle(float x0, float y0, float x, float y, float r, float g, float b){
 //    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    int w = 32;
     glColor3f(r, g, b);
     glBegin(GL_LINE_LOOP);
     glVertex2d(x0, y0);
-    glVertex2d(x0, y0+w);
-    glVertex2d(x0+w, y0+w);
-    glVertex2d(x0+w, y0);
+    glVertex2d(x0, y);
+    glVertex2d(x, y);
+    glVertex2d(x, y0);
     glEnd();
 }
 
@@ -352,6 +352,26 @@ void draw_grid(int w, int h){
     glEnd();
     glDisable(GL_LINE_STIPPLE);
 
+}
+
+
+
+template <typename T>
+std::string toString(T val)
+{
+    std::ostringstream oss;
+    oss<< val;
+    return oss.str();
+}
+
+template<typename T>
+
+T fromString(const std::string& s)
+{
+    std::istringstream iss(s);
+    T res;
+    iss >> res;
+    return res;
 }
 
 

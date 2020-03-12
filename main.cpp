@@ -38,6 +38,9 @@ float old_Y0;
 float old_X;
 float old_Y;
 bool isGrid = true;
+std::list <point> sel_points;
+
+std::list <int> selFigures;
 
 struct textura_struct {
     int W;
@@ -45,13 +48,7 @@ struct textura_struct {
     unsigned char *Image;
 } get_textura;
 
-//std::vector<textura_struct> textures;
-//
-//
-//GLuint textura_count = 0;
-
 std::vector<GLuint> textura_id;
-
 
 std::vector<color_t> texture;
 
@@ -63,6 +60,7 @@ float erWidth = 10;
 std::list<figure> figures;
 point p;
 figure fig;
+bool start_select = false;
 
 void insert_screenshot(std::string fileName);
 
@@ -145,6 +143,21 @@ void Render() {
         }
 
     }
+    //Виділені фігури
+    for (auto &f: figures) {
+        bool l = false;
+        for (auto sf : selFigures) {
+            if (sf == f.id) {
+                l = true;
+                break;
+            }
+        }
+        if (l){
+            border b = f.extrem;
+            draw_rectangle(b.xmin-4-cx, b.ymin-4-cy, b.xmax+4-cx, b.ymax+4-cy,1,0,0);
+        }
+    }
+
 }
 
 void draw_pictures_all() {
@@ -199,7 +212,11 @@ void Draw() {
     if (isGrid) {
         draw_grid(WinWid, WinHei);
     }
-    renderSpacedBitmapString(5, 60, 0,  GLUT_BITMAP_HELVETICA_18, "Привіт світ! 1234");
+    char * s;
+    int n = selFigures.size();
+
+    std::cout<<"figuresCount = "<<selFigures.size()<<std::endl;
+//    renderSpacedBitmapString(5, 60, 0,  GLUT_BITMAP_HELVETICA_18, "");
     draw_buttons(cAll);
     glFlush();
 }
@@ -233,7 +250,7 @@ void draw_to_figures(int XX0, int YY0, int XX, int YY, colorAll cAll, float thin
 void figures_update() {
 //    std::list<figure> tmpList;
     figures.remove_if([](figure n) { return n.fordel == true; });
-
+//    for (auto f: figures) { f.extrem = border_polyline(f.p);}
 }
 
 void Timer(int) {
@@ -448,7 +465,23 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
                 down = true;
                 X0 = ax;
                 Y0 = m_s(ay);
+
+
             } else {    // GLUT_UP
+//                if (start_select){
+//                    X = ax;
+//                    Y= m_s(ay);
+//                    // Виділяємо всі об'єкти з діапазону X0,Y0,X,Y
+//                    for (auto f: figures){
+//                        if ((f.center.x>X0)&&(f.center.x<X)&&
+//                            (f.center.y>Y0)&&(f.center.y<Y)){
+//                            selFigures.push_back(f.id);
+//                        }
+//                    }
+//
+//
+//                    start_select = false;
+//                }
                 down = false;
                 old_X = 0;
                 old_Y = 0;
@@ -456,16 +489,34 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
                     case 3:
                         draw_to_figures(X0, Y0, X, Y, cAll, penWidth);
                         break;
+                    case 8: //виділення фігур
+                        // Шукаємо фігуру щоб виділити
+                        bool flag = false;
+                        for (auto &f: figures){
+                            if ((ax+cx>f.extrem.xmin)&&(ax+cx<f.extrem.xmax)&&
+                                (m_s(ay)+cy>f.extrem.ymin)&&(m_s(ay)+cy<f.extrem.ymax)){
+                                selFigures.push_back(f.id);
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if (!flag) selFigures.clear();
+//                        start_select = true;
+
+                        break;
                 }
                 figures_is_visible();
+                figures_update();
             }
             if (tool > 1)
                 Draw();
 
         } else if (button == 3) { //scrolling
             cy += 1;
+
         } else if (button == 4) { //scrolling
             cy -= 1;
+
         }
         figures_is_visible();
         glutPostRedisplay();
@@ -478,6 +529,8 @@ void on_mouse_drag(int ax, int ay) {
     if (down) {//                Draw();
         X = ax;
         Y = m_s(ay);
+        float dx = (old_X - X);
+        float dy = (old_Y - Y);
         switch (tool) {
             case 1:                             // Ручка
                 draw_to_figures(X0, Y0, X, Y, cAll, penWidth);
@@ -512,6 +565,37 @@ void on_mouse_drag(int ax, int ay) {
             case 20:                    // Тягаємо полотно
                 cx += (old_X - X);
                 cy += (old_Y - Y);
+                old_X = X;
+                old_Y = Y;
+                glutPostRedisplay();
+                break;
+            case 8:                    // Тягаємо виділене
+                if (!start_select) {
+                    for (auto &f: figures) {
+                        bool l = false;
+                        for (auto sf : selFigures) {
+                            if (sf == f.id) {
+                                l = true;
+                                break;
+                            }
+                        }
+                        if (l) {
+                            for (auto &p: f.p) {
+                                p.x -= (dx);
+                                p.y -= (dy);
+                            }
+                            f.extrem = border_polyline(f.p);
+                            f.center.x -= (dx);
+                            f.center.y -= (dy);
+                        }
+                    }
+                } else { //Процес виділення
+
+
+                }
+
+
+
                 old_X = X;
                 old_Y = Y;
                 glutPostRedisplay();
