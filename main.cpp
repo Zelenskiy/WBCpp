@@ -15,7 +15,6 @@
 #include <bits/stdc++.h>
 
 
-
 float WinWid = 800.0;
 float WinHei = 600.0;
 //float WinWid = 1366.0;
@@ -38,7 +37,7 @@ float old_X0;
 float old_Y0;
 float old_X;
 float old_Y;
-bool isGrid = false;
+bool isGrid = true;
 
 struct textura_struct {
     int W;
@@ -56,7 +55,7 @@ std::vector<GLuint> textura_id;
 
 std::vector<color_t> texture;
 
-int penWidth = 4;
+int penWidth = 2;
 int tool = 1;
 float erWidth = 10;
 
@@ -128,7 +127,7 @@ void Render() {
 //                c.colorR = 1.0;
 //                c.colorG = 1.0;
 //                c.colorB = 1.0;
-                point p1,p2,p3,p4;
+                point p1, p2, p3, p4;
                 p1.x = ps[0].x - cx;
                 p1.y = ps[0].y - cy;
                 p2.x = ps[1].x - cx;
@@ -139,7 +138,7 @@ void Render() {
                 p4.y = ps[3].y - cy;
 
 
-                draw_texture(f.start_image, p1,p2,p3,p4 );
+                draw_texture(f.start_image, p1, p2, p3, p4);
 //                draw_texture(f.start_image, b);
 
             }
@@ -179,6 +178,20 @@ void draw_image(int start, int end) {
     glEnd();
 }
 
+void renderSpacedBitmapString(
+        float x,
+        float y,
+        int spacing,
+        void *font,
+        char *string) {
+    char *c;
+    int x1 = x;
+    for (c = string; *c != '\0'; c++) {
+        glRasterPos2f(x1, y);
+        glutBitmapCharacter(font, *c);
+        x1 = x1 + glutBitmapWidth(font, *c) + spacing;
+    }
+}
 
 void Draw() {
     Render();
@@ -186,7 +199,7 @@ void Draw() {
     if (isGrid) {
         draw_grid(WinWid, WinHei);
     }
-
+    renderSpacedBitmapString(5, 60, 0,  GLUT_BITMAP_HELVETICA_18, "Привіт світ! 1234");
     draw_buttons(cAll);
     glFlush();
 }
@@ -266,6 +279,28 @@ void write_ini() {
     fout << "penColorR = " << cAll.colorR << std::endl;
     fout << "penColorG = " << cAll.colorG << std::endl;
     fout << "penColorB = " << cAll.colorB << std::endl;
+
+    fout << "color0R = " << 0.9 << std::endl;
+    fout << "color0G = " << 0.0 << std::endl;
+    fout << "color0B = " << 0.0 << std::endl;
+
+    fout << "color1R = " << 0.0 << std::endl;
+    fout << "color1G = " << 0.5 << std::endl;
+    fout << "color1B = " << 0.0 << std::endl;
+
+    fout << "color2R = " << 0.0 << std::endl;
+    fout << "color2G = " << 0.0 << std::endl;
+    fout << "color2B = " << 0.9 << std::endl;
+
+    fout << "color3R = " << 0.9 << std::endl;
+    fout << "color3G = " << 0.5 << std::endl;
+    fout << "color3B = " << 0.0 << std::endl;
+
+    fout << "color4R = " << 0.0 << std::endl;
+    fout << "color4G = " << 0.0 << std::endl;
+    fout << "color4B = " << 0.0 << std::endl;
+
+
     if (isGrid)
         fout << "grid = " << "true" << std::endl;
     else
@@ -279,6 +314,11 @@ void read_ini() {
     std::ifstream file_ini;
     file_ini.open("wb.ini");
     if (file_ini) {
+        float col[5][3] = {{0, 0, 0},
+                           {0, 0, 0},
+                           {0, 0, 0},
+                           {0, 0, 0},
+                           {0, 0, 0}};
         //Читаємо
         while (file_ini) {
             std::string str;
@@ -293,6 +333,28 @@ void read_ini() {
             if (field == "penColorR") cAll.colorR = stof(value);
             if (field == "penColorG")cAll.colorG = stof(value);
             if (field == "penColorB") cAll.colorB = stof(value);
+//            std::vector <colorAll, int> col; col.push_back(stof(value),1);
+
+            if (field == "color0R")
+                col[0][0] = stof(value);
+            if (field == "color0G")
+                col[0][1] = stof(value);
+            if (field == "color0B")
+                col[0][2] = stof(value);
+            if (field == "color1R") col[1][0] = stof(value);
+            if (field == "color1G")
+                col[1][1] = stof(value);
+            if (field == "color1B") col[1][2] = stof(value);
+            if (field == "color2R") col[2][0] = stof(value);
+            if (field == "color2G") col[2][1] = stof(value);
+            if (field == "color2B") col[2][2] = stof(value);
+            if (field == "color3R") col[3][0] = stof(value);
+            if (field == "color3G") col[3][1] = stof(value);
+            if (field == "color3B") col[3][2] = stof(value);
+            if (field == "color4R") col[4][0] = stof(value);
+            if (field == "color4G") col[4][1] = stof(value);
+            if (field == "color4B") col[4][2] = stof(value);
+
             if (field == "penWidth") penWidth = stof(value);
             if (field == "erWidth") erWidth = stof(value);
             if (field == "grid")
@@ -305,11 +367,12 @@ void read_ini() {
             cAll.fonColorB = cFon.colorB;
 
         }
-
+        set_color_button(col);
     } else {
         //Пишемо новий
         write_ini();
     }
+
     file_ini.close();
 
 
@@ -355,8 +418,8 @@ float m_s(float y) {
 void on_mouse_down_up(int button, int state, int ax, int ay) {
     if (m_s(ay) < 35) {
         // --- check buttons --------
-        colorAll tmpColorAll;
-        int t = check_buttons(ax, m_s(ay),tmpColorAll);
+        colorAll tmpColorAll = cAll;
+        int t = check_buttons(ax, m_s(ay), tmpColorAll);
         if (t > 0) {
             tool = t;
         } else if (t == -1) { //Згортаємо
@@ -365,9 +428,9 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
             close_app();
             glutDestroyWindow(window);
         } else if (t < -10) { //Вибираємо колір
-            t *=-1;
-            cAll.colorR= tmpColorAll.colorR;
-            cAll.colorG= tmpColorAll.colorG;
+            t *= -1;
+            cAll.colorR = tmpColorAll.colorR;
+            cAll.colorG = tmpColorAll.colorG;
             cAll.colorB = tmpColorAll.colorB;
         }
 
@@ -530,6 +593,15 @@ void close_app() {
         int n;
         n = remove("is_work.txt");
     }
+    file.open("flag.txt");
+    file.close();
+    if (file) {
+        std::cout << "Удаляем файл flag.txt.\n";
+        int n;
+        n = remove("flag.txt");
+    }
+
+
     //Зберігаємо фігури до файлу
     save_figures(figures);
 
@@ -540,7 +612,7 @@ void close_app() {
     std::string name_zip = "lessons/" + currentDateToString() + ".zip";
 
     std::string command = "zip -m " + name_zip + " tmp/*.*";
-//    system(command.c_str());
+    system(command.c_str());
 
 }
 
@@ -548,11 +620,19 @@ void on_window_status(int status) {
     if (status == GLUT_HIDDEN) {
         std::cout << "Згорнуло" << std::endl;
         std::ofstream fout("flag.txt");
-//        fout << "" << std::endl;
         fout.close();
+    } else {
+        std::ifstream file;
+        file.open("flag.txt");
+        file.close();
+        if (file) {
+            std::cout << "Удаляем файл flag.txt.\n";
+            int n;
+            n = remove("flag.txt");
+        }
     }
-
 }
+
 
 void on_exit() {
     close_app();
@@ -599,9 +679,9 @@ void insert_screenshot(std::string fileName) {
     cx = 0;
     //шукаємо фігуру з найнижчою координатою
     int y = 2000;
-    for (auto f:figures){
-        for (auto p: f.p){
-            if (p.y<y){
+    for (auto f:figures) {
+        for (auto p: f.p) {
+            if (p.y < y) {
                 y = p.y;
             }
         }
@@ -625,8 +705,8 @@ void insert_screenshot(std::string fileName) {
     p.x = x0 + cx;
     p.y = y0 + cy + h;
     fig.p.push_back(p);
-    p.x = x0 + cx+w;
-    p.y = y0 + cy+h;
+    p.x = x0 + cx + w;
+    p.y = y0 + cy + h;
     fig.p.push_back(p);
     p.x = x0 + cx + w;
     p.y = y0 + cy;
@@ -677,6 +757,7 @@ void _draw_texture(GLuint text_nun, border b) {
     glEnd();
     glDisable(GL_TEXTURE_2D);
 }
+
 void draw_texture(GLuint text_nun, point p1, point p2, point p3, point p4) {
     /* Вывод изображения в окне */
     glEnable(GL_TEXTURE_2D);
@@ -942,7 +1023,7 @@ GLuint LoadTexture(char *FileName, int &w, int &h) {
 void load_figures() {
     texture.empty();
     std::ifstream file;
-    file.open("tmp/figs.json");
+    file.open("figs.json");
     if (file) {
         //Читаємо
         int num = 0;

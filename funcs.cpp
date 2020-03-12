@@ -146,11 +146,34 @@ void draw_but(int i, float x0, float y0, colorAll cAll) {
     }
 }
 
+void set_color_button(float col[5][3]) {
+    for (int n = 0; n < 5; n++) {
+        for (int r = 0; r < 3; r++) {
+            color_button[n][r] = col[n][r];
+        }
+    }
+}
+
+
+void draw_rectangle(float x0, float y0, float r, float g, float b){
+//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    int w = 32;
+    glColor3f(r, g, b);
+    glBegin(GL_LINE_LOOP);
+    glVertex2d(x0, y0);
+    glVertex2d(x0, y0+w);
+    glVertex2d(x0+w, y0+w);
+    glVertex2d(x0+w, y0);
+    glEnd();
+}
+
 int check_buttons(float x0, float y0, colorAll &tmpColorAll) {
+//    for (int i = 0; i < BUTTONS_COUNT; i++) {draw_rectangle(buttons[i].x0,buttons[i].y0, tmpColorAll.fonColorR, tmpColorAll.fonColorG, tmpColorAll.fonColorB);}
     for (int i = 0; i < BUTTONS_COUNT; i++) {
         if ((x0 > buttons[i].x0) && (x0 < buttons[i].x0 + buttons[i].w) &&
             (y0 > buttons[i].y0) && (y0 < buttons[i].y0 + buttons[i].h) &&
             (button_visible[i] == 1)) {
+//            draw_rectangle(buttons[i].x0,buttons[i].y0, 1.0, 0.0, 0.0);
             return buttons[i].tool;
         }
     }
@@ -334,7 +357,7 @@ void draw_grid(int w, int h){
 
 void save_figures(std::list<figure> figures){
     std::string comma;
-    std::ofstream fout("tmp/figs.json");
+    std::ofstream fout("figs.json");
     fout << "{" << std::endl;
     fout << "    \"count\": "<<figures.size()<<"," << std::endl;
     fout << "    \"figures\": "<<"[" << std::endl;

@@ -186,6 +186,9 @@ void save_figures(std::list<figure> figures);
 
 std::string trim (std::string s, char c);
 
+void set_color_button(float col[5][3]);
+void draw_rectangle(float x0, float y0, float r, float g, float b);
+
 //void draw_texture(GLuint textura_id, border b);
 
 #endif //WBCPP_FUNCS_H

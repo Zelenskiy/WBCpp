@@ -108,9 +108,9 @@ var tmpBitmap:TBitmap;
 begin
   //ShowMessage(path);
   if Form1.x='win' then
-     namefile:= Form1.path+apDir+'tmp.txt'
+     namefile:= Form1.path+'tmp.txt'
   else
-     namefile:= Form1.path+apDir+'tmp_f.txt';
+     namefile:= Form1.path+'tmp_f.txt';
 
   ScreenDC := GetDC(0);
   listF:=TStringList.Create;
@@ -126,7 +126,7 @@ begin
      ResizeBitmap(tmpBitmap,w,h);
   w := tmpBitmap.Width;
   h:= tmpBitmap.Height;
-  tmpBitmap.SaveToFile(Form1.path+apDir+'file.bmp');
+  tmpBitmap.SaveToFile(Form1.path+'file.bmp');
   {
   listF.Add(IntToStr(w));
   listF.Add(IntToStr(h));
@@ -160,7 +160,7 @@ end;
 procedure TForm1.Timer3Timer(Sender: TObject);
 var   file_name:string;
 begin
-  file_name := Form1.path+apDir+'flag.txt';
+  file_name := Form1.path +'flag.txt';
   if FileExists(file_name) then begin
      Form1.Visible:=True;
   end
@@ -175,7 +175,7 @@ end;
 procedure TForm1.Timer4Timer(Sender: TObject);
 var   file_name:string;
 begin
-    file_name := Form1.path+apDir+'is_work.txt';
+    file_name := Form1.path+'is_work.txt';
   if not FileExists(file_name) then begin
      //TODO
 
@@ -209,13 +209,14 @@ begin
   s:= ExtractFilePath(Application.ExeName);
   if os =  'windows' then c := '\' else c := '/';
   apDir := 'cmake-build-debug' + c;
-  j := length(s);
+  {j := length(s);
   for i:=j-1 downto 1 do begin
       if s[i] = c then begin
          s := copy(s,1,i);
          break;
       end;
   end;
+  }
   //ShowMessage(s);
   Form1.path := s;
   startDrag := False;
