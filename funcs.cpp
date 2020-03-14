@@ -156,6 +156,8 @@ void set_color_button(float col[5][3]) {
 }
 
 
+
+
 void draw_rectangle(float x0, float y0, float x, float y, float r, float g, float b){
 //    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glColor3f(r, g, b);

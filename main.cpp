@@ -144,19 +144,61 @@ void Render() {
 
     }
     //Виділені фігури
-    for (auto &f: figures) {
-        bool l = false;
-        for (auto sf : selFigures) {
-            if (sf == f.id) {
-                l = true;
-                break;
+    if (tool == 8) {
+        //Виділені фігури
+        for (auto &f: figures) {
+            bool l = false;
+            for (auto sf : selFigures) {
+                if (sf == f.id) {
+                    l = true;
+                    break;
+                }
+            }
+            if (l) {
+                border b = f.extrem;
+                draw_rectangle(b.xmin - 4 - cx, b.ymin - 4 - cy, b.xmax + 4 - cx, b.ymax + 4 - cy, 1, 0, 0);
             }
         }
-        if (l) {
-            border b = f.extrem;
-            draw_rectangle(b.xmin - 4 - cx, b.ymin - 4 - cy, b.xmax + 4 - cx, b.ymax + 4 - cy, 1, 0, 0);
-        }
     }
+
+//        if (selFigures.size() == 1) {
+//            int sf = selFigures.back();
+//            bool l = false;
+//            for (auto &f: figures) {
+//                if (sf == f.id) {
+//                    l = true;
+//                    border b = f.extrem;
+//                    draw_rectangle(b.xmin - 4 - cx, b.ymin - 4 - cy, b.xmax + 4 - cx, b.ymax + 4 - cy, 1, 0, 0);
+//                    break;
+//                }
+//            }
+//
+//        } else {
+//            float xmin, xmax, ymin, ymax;
+//            xmin = figures.back().extrem.xmin;
+//            ymin = figures.back().extrem.ymin;
+//            xmax = figures.back().extrem.xmax;
+//            ymax = figures.back().extrem.ymax;
+//            for (auto &f: figures) {
+//                bool l = false;
+//                border b;
+//                for (auto sf : selFigures) {
+//                    if (sf == f.id) {
+//                        if (xmin > f.extrem.xmin) xmin = f.extrem.xmin;
+//                        if (ymin > f.extrem.ymin) ymin = f.extrem.ymin;
+//                        if (xmax < f.extrem.xmax) xmax = f.extrem.xmax;
+//                        if (ymax < f.extrem.ymax) ymax = f.extrem.ymax;
+//                        break;
+//                    }
+//                }
+//            }
+//            draw_rectangle(xmin - 4 - cx, ymin - 4 - cy, xmax + 4 - cx, ymax + 4 - cy, 1, 0, 0);
+//
+//
+//        }
+
+
+
 
 }
 
@@ -262,11 +304,13 @@ void Timer(int) {
     file.open("file.bmp");
     file.close();
     if (file) {
-        glutFullScreen();
-        glutReshapeWindow(WinWid, WinHei - 60);
-        glutShowWindow();
-        insert_screenshot("file.bmp");
+
+//        glutFullScreen();
+//        glutReshapeWindow(WinWid, WinHei - 60);
 //        glutShowWindow();
+        char * command = "wmctrl -a Hello";
+        system(command);
+        insert_screenshot("file.bmp");
     }
 
 
@@ -461,64 +505,69 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
             old_X = ax;
             old_Y = m_s(ay);
             if (state == GLUT_DOWN) {
+                start_select = false;
                 down = true;
                 X0 = ax;
                 Y0 = m_s(ay);
                 if (tool == 8){
+                    //Якщо виділеного немає
                     if (selFigures.size() == 0){
-                        start_select = true;
-                    } else {
-                        // Шукаємо фігуру щоб виділити
-                        start_select = false;
-                        bool flag = false;
-                        for (auto &f: figures) {
-                            if ((ax + cx > f.extrem.xmin) && (ax + cx < f.extrem.xmax) &&
-                                (m_s(ay) + cy > f.extrem.ymin) && (m_s(ay) + cy < f.extrem.ymax)) {
-                                selFigures.push_back(f.id);
+                         bool flag = false;
+                         int fig = 0;
+                         for (auto f: figures){
+                             if ((ax + cx > f.extrem.xmin) && (ax + cx < f.extrem.xmax) &&
+                               (m_s(ay) + cy > f.extrem.ymin) && (m_s(ay) + cy < f.extrem.ymax)){
                                 flag = true;
+                                fig = f.id;
                                 break;
+                             }
+                         }
+                         if (!flag){
+                        //Якщо під курсором нічого немає
+                        //почнемо виділення рамкою
+                             start_select = true;
+                        } else {
+                        //Якщо під курсором є фігура
+                        //Виділимо її
+
+                            selFigures.push_back(fig);
+                        }
+                    } else {
+                    //Якщо виділене є
+                        points ps;
+                        for (auto sF: selFigures){
+                            point p;
+                            for (auto f: figures){
+                                if (f.id == sF) {
+                                    p.x = f.extrem.xmin;
+                                    p.y = f.extrem.ymin;
+                                    ps.push_back(p);
+                                    p.x = f.extrem.xmax;
+                                    p.y = f.extrem.ymax;
+                                    ps.push_back(p);
+                                }
                             }
                         }
-                        if (!flag) selFigures.clear();
+                        border b = border_polyline(ps);
+                        if ((ax + cx > b.xmin) && (ax + cx < b.xmax) &&
+                            (m_s(ay) + cy > b.ymin) && (m_s(ay) + cy < b.ymax)){
+                            //Якщо курсор оточений виділеним
+                            printf("Якщо курсор оточений виділеним\n");
+
+                        } else {
+                            //Якщо курсор за межами виділених
+                            selFigures.clear();
+                        }
                     }
                 }
 
-
-
             } else {    // GLUT_UP
-//                if (start_select){
-//                    X = ax;
-//                    Y= m_s(ay);
-//                    // Виділяємо всі об'єкти з діапазону X0,Y0,X,Y
-//                    for (auto f: figures){
-//                        if ((f.center.x>X0)&&(f.center.x<X)&&
-//                            (f.center.y>Y0)&&(f.center.y<Y)){
-//                            selFigures.push_back(f.id);
-//                        }
-//                    }
-//
-//
-//                    start_select = false;
-//                }
                 down = false;
                 old_X = 0;
                 old_Y = 0;
                 switch (tool) {
                     case 3:
                         draw_to_figures(X0, Y0, X, Y, cAll, penWidth);
-                        break;
-                    case 8: //виділення фігур
-//                        // Шукаємо фігуру щоб виділити
-//                        bool flag = false;
-//                        for (auto &f: figures) {
-//                            if ((ax + cx > f.extrem.xmin) && (ax + cx < f.extrem.xmax) &&
-//                                (m_s(ay) + cy > f.extrem.ymin) && (m_s(ay) + cy < f.extrem.ymax)) {
-//                                selFigures.push_back(f.id);
-//                                flag = true;
-//                                break;
-//                            }
-//                        }
-//                        if (!flag) selFigures.clear();
                         break;
                 }
                 figures_is_visible();
@@ -613,8 +662,11 @@ void on_mouse_drag(int ax, int ay) {
                     float yy = std::fmax(Y0, Y);
                     selFigures.clear();
                     for (auto f: figures) {
-                        point b = f.center;
-                        if ((xx0 < b.x) && (xx > b.x) && (yy0 < b.y) && (yy > b.y)) {
+                        point b;
+                        b.x = (f.extrem.xmin + f.extrem.xmax)/2;
+                        b.y = (f.extrem.ymin + f.extrem.ymax)/2;
+
+                        if ((xx0+cx < b.x) && (xx+cx > b.x) && (yy0+cy < b.y) && (yy+cy > b.y)) {
                             selFigures.push_back(f.id);
                         }
                     }
