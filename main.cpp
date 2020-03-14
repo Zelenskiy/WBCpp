@@ -38,9 +38,9 @@ float old_Y0;
 float old_X;
 float old_Y;
 bool isGrid = true;
-std::list <point> sel_points;
+std::list<point> sel_points;
 
-std::list <int> selFigures;
+std::list<int> selFigures;
 
 struct textura_struct {
     int W;
@@ -152,9 +152,9 @@ void Render() {
                 break;
             }
         }
-        if (l){
+        if (l) {
             border b = f.extrem;
-            draw_rectangle(b.xmin-4-cx, b.ymin-4-cy, b.xmax+4-cx, b.ymax+4-cy,1,0,0);
+            draw_rectangle(b.xmin - 4 - cx, b.ymin - 4 - cy, b.xmax + 4 - cx, b.ymax + 4 - cy, 1, 0, 0);
         }
     }
 
@@ -212,10 +212,10 @@ void Draw() {
     if (isGrid) {
         draw_grid(WinWid, WinHei);
     }
-    char * s;
+    char *s;
     int n = selFigures.size();
 
-    std::cout<<"figuresCount = "<<selFigures.size()<<std::endl;
+    std::cout << "figuresCount = " << selFigures.size() << std::endl;
 //    renderSpacedBitmapString(5, 60, 0,  GLUT_BITMAP_HELVETICA_18, "");
     draw_buttons(cAll);
     glFlush();
@@ -460,11 +460,29 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
             old_Y0 = 0;
             old_X = ax;
             old_Y = m_s(ay);
-//            fig.p.clear();
             if (state == GLUT_DOWN) {
                 down = true;
                 X0 = ax;
                 Y0 = m_s(ay);
+                if (tool == 8){
+                    if (selFigures.size() == 0){
+                        start_select = true;
+                    } else {
+                        // Шукаємо фігуру щоб виділити
+                        start_select = false;
+                        bool flag = false;
+                        for (auto &f: figures) {
+                            if ((ax + cx > f.extrem.xmin) && (ax + cx < f.extrem.xmax) &&
+                                (m_s(ay) + cy > f.extrem.ymin) && (m_s(ay) + cy < f.extrem.ymax)) {
+                                selFigures.push_back(f.id);
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if (!flag) selFigures.clear();
+                    }
+                }
+
 
 
             } else {    // GLUT_UP
@@ -490,19 +508,17 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
                         draw_to_figures(X0, Y0, X, Y, cAll, penWidth);
                         break;
                     case 8: //виділення фігур
-                        // Шукаємо фігуру щоб виділити
-                        bool flag = false;
-                        for (auto &f: figures){
-                            if ((ax+cx>f.extrem.xmin)&&(ax+cx<f.extrem.xmax)&&
-                                (m_s(ay)+cy>f.extrem.ymin)&&(m_s(ay)+cy<f.extrem.ymax)){
-                                selFigures.push_back(f.id);
-                                flag = true;
-                                break;
-                            }
-                        }
-                        if (!flag) selFigures.clear();
-//                        start_select = true;
-
+//                        // Шукаємо фігуру щоб виділити
+//                        bool flag = false;
+//                        for (auto &f: figures) {
+//                            if ((ax + cx > f.extrem.xmin) && (ax + cx < f.extrem.xmax) &&
+//                                (m_s(ay) + cy > f.extrem.ymin) && (m_s(ay) + cy < f.extrem.ymax)) {
+//                                selFigures.push_back(f.id);
+//                                flag = true;
+//                                break;
+//                            }
+//                        }
+//                        if (!flag) selFigures.clear();
                         break;
                 }
                 figures_is_visible();
@@ -590,10 +606,19 @@ void on_mouse_drag(int ax, int ay) {
                         }
                     }
                 } else { //Процес виділення
-
-
+                    draw_rectangle(X0, Y0, X, Y, 1, 0, 0);
+                    float xx0 = std::fmin(X0, X);
+                    float xx = std::fmax(X0, X);
+                    float yy0 = std::fmin(Y0, Y);
+                    float yy = std::fmax(Y0, Y);
+                    selFigures.clear();
+                    for (auto f: figures) {
+                        point b = f.center;
+                        if ((xx0 < b.x) && (xx > b.x) && (yy0 < b.y) && (yy > b.y)) {
+                            selFigures.push_back(f.id);
+                        }
+                    }
                 }
-
 
 
                 old_X = X;
