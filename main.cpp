@@ -525,7 +525,7 @@ float m_s(float y) {
 
 
 void on_mouse_down_up(int button, int state, int ax, int ay) {
-    if (m_s(ay) < 35) {
+    if ((m_s(ay) < 35)&&(button == GLUT_LEFT_BUTTON)&&(state == GLUT_DOWN) ){
         // --- check buttons --------
         colorAll tmpColorAll = cAll;
         int t = check_buttons(ax, m_s(ay), tmpColorAll);
@@ -543,6 +543,11 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
             read_ini();
             command = "wmctrl -a Hello";
             system(command);
+       } else if (t == -4) { //відкриваємо файл з диску
+            char filename[1024];
+            FILE *f = popen("zenity --file-selection", "r");
+            fgets(filename, 1024, f);
+            load_file(filename);
 
         } else if (t < -10) { //Вибираємо колір
             t *= -1;
@@ -785,16 +790,20 @@ void on_keypress(unsigned char key, int x, int y) {
         case 115:   //S
             insert_screenshot("file.bmp", -1, -1, -1, -1);
             break;
-        case 108:   //L
-            load_file("lessons/2020-03-15_20_10_48.zip");
-            //load_figures();
-            break;
+
         case 127:
             figures.clear();
             Draw();
             break;
         case 102: //F
             glutFullScreen();
+            break;
+        case 108:   //L
+            std::string command ;
+            char filename[1024];
+            FILE *f = popen("zenity --file-selection", "r");
+            fgets(filename, 1024, f);
+            //load_file(filename);
             break;
     }
 }

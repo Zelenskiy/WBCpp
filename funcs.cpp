@@ -120,9 +120,9 @@ void test_draw(colorAll cAll) {
 }
 
 
-string button_name[BUTTONS_COUNT] = {"ar", "hand", "pen", "er", "line", "minimize", "close", "options"};
-int button_index[BUTTONS_COUNT] = {8, 20, 1, 2, 3,-1, -2, -3};
-int button_visible[BUTTONS_COUNT] = {1, 1, 1, 1, 1, 1, 1, 1};
+string button_name[BUTTONS_COUNT] = {"ar", "hand", "pen", "er", "line", "minimize", "close", "options", "open"};
+int button_index[BUTTONS_COUNT] = {8, 20, 1, 2, 3,-1, -2, -3, -4};
+int button_visible[BUTTONS_COUNT] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 //float dist(float x0, float y0, float x, float y){
 //    return max(x-x0,y-y0);
