@@ -849,13 +849,14 @@ int insert_screenshot(std::string fileName, float x0, float y0, float x, float y
 
         y0 = WinHei - h - 60; //400;
         x0 = WinWid - w;
-        figure fig;
+
     } else {
+
         w = x - x0;
         h = y - y0;
     }
 
-
+    figure fig;
     p.x = x0 + cx;
     p.y = y0 + cy;
     fig.p.push_back(p);
@@ -1452,22 +1453,12 @@ void load_figures() {
 
             }
         }
-//        for (auto f: figures){
-//            if (f.name=="image"){
-//                std::string fileName = "tmp/"+f.file_image;
-//                char *cfileName = const_cast<char *>(fileName.c_str());
-//                int w = 0;
-//                int h = 0;
-//                int res = LoadTexture(cfileName, w, h);
-//                f.visible = true;
-//                f.start_image = textura_id.size() - 1;
-//                f.end_image = 0;
-//            }
-//        }
-
     } else {
     }
     file.close();
+    //
+    cx = 0;
+    cy = 0;
     Draw();
 
 
