@@ -292,6 +292,7 @@ std::string currentDateToString(){
     strftime(buffer,sizeof(buffer),"%Y-%m-%d_%H_%M_%S",timeinfo);
     std::string str(buffer);
 
+
     return str;
 }
 
@@ -379,7 +380,7 @@ T fromString(const std::string& s)
 
 void save_figures(std::list<figure> figures){
     std::string comma;
-    std::ofstream fout("figs.json");
+    std::ofstream fout("tmp/figs.json");
     fout << "{" << std::endl;
     fout << "    \"count\": "<<figures.size()<<"," << std::endl;
     fout << "    \"figures\": "<<"[" << std::endl;

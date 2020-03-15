@@ -62,7 +62,7 @@ point p;
 figure fig;
 bool start_select = false;
 
-void insert_screenshot(std::string fileName);
+int insert_screenshot(std::string fileName, float x0, float y0, float x, float y);
 
 void close_app();
 
@@ -308,9 +308,9 @@ void Timer(int) {
 //        glutFullScreen();
 //        glutReshapeWindow(WinWid, WinHei - 60);
 //        glutShowWindow();
-        char * command = "wmctrl -a Hello";
+        char *command = "wmctrl -a Hello";
         system(command);
-        insert_screenshot("file.bmp");
+        insert_screenshot("file.bmp", -1, -1, -1, -1);
     }
 
 
@@ -509,35 +509,35 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
                 down = true;
                 X0 = ax;
                 Y0 = m_s(ay);
-                if (tool == 8){
+                if (tool == 8) {
                     //Якщо виділеного немає
-                    if (selFigures.size() == 0){
-                         bool flag = false;
-                         int fig = 0;
-                         for (auto f: figures){
-                             if ((ax + cx > f.extrem.xmin) && (ax + cx < f.extrem.xmax) &&
-                               (m_s(ay) + cy > f.extrem.ymin) && (m_s(ay) + cy < f.extrem.ymax)){
+                    if (selFigures.size() == 0) {
+                        bool flag = false;
+                        int fig = 0;
+                        for (auto f: figures) {
+                            if ((ax + cx > f.extrem.xmin) && (ax + cx < f.extrem.xmax) &&
+                                (m_s(ay) + cy > f.extrem.ymin) && (m_s(ay) + cy < f.extrem.ymax)) {
                                 flag = true;
                                 fig = f.id;
                                 break;
-                             }
-                         }
-                         if (!flag){
-                        //Якщо під курсором нічого немає
-                        //почнемо виділення рамкою
-                             start_select = true;
+                            }
+                        }
+                        if (!flag) {
+                            //Якщо під курсором нічого немає
+                            //почнемо виділення рамкою
+                            start_select = true;
                         } else {
-                        //Якщо під курсором є фігура
-                        //Виділимо її
+                            //Якщо під курсором є фігура
+                            //Виділимо її
 
                             selFigures.push_back(fig);
                         }
                     } else {
-                    //Якщо виділене є
+                        //Якщо виділене є
                         points ps;
-                        for (auto sF: selFigures){
+                        for (auto sF: selFigures) {
                             point p;
-                            for (auto f: figures){
+                            for (auto f: figures) {
                                 if (f.id == sF) {
                                     p.x = f.extrem.xmin;
                                     p.y = f.extrem.ymin;
@@ -550,7 +550,7 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
                         }
                         border b = border_polyline(ps);
                         if ((ax + cx > b.xmin) && (ax + cx < b.xmax) &&
-                            (m_s(ay) + cy > b.ymin) && (m_s(ay) + cy < b.ymax)){
+                            (m_s(ay) + cy > b.ymin) && (m_s(ay) + cy < b.ymax)) {
                             //Якщо курсор оточений виділеним
                             printf("Якщо курсор оточений виділеним\n");
 
@@ -663,10 +663,8 @@ void on_mouse_drag(int ax, int ay) {
                     selFigures.clear();
                     for (auto f: figures) {
                         point b;
-                        b.x = (f.extrem.xmin + f.extrem.xmax)/2;
-                        b.y = (f.extrem.ymin + f.extrem.ymax)/2;
-
-                        if ((xx0+cx < b.x) && (xx+cx > b.x) && (yy0+cy < b.y) && (yy+cy > b.y)) {
+                        b = f.center;
+                        if ((xx0 + cx < b.x) && (xx + cx > b.x) && (yy0 + cy < b.y) && (yy + cy > b.y)) {
                             selFigures.push_back(f.id);
                         }
                     }
@@ -699,14 +697,11 @@ void on_keypress(unsigned char key, int x, int y) {
         case 101:
             tool = 2;
             break;
-//        case 108:
-//            tool = 3;
-//            break;
         case 97:
             test_draw(cAll);
             break;
         case 115:   //S
-            insert_screenshot("file.bmp");
+            insert_screenshot("file.bmp", -1, -1, -1, -1);
             break;
         case 108:   //L
             load_figures();
@@ -829,37 +824,38 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-void insert_screenshot(std::string fileName) {
+int insert_screenshot(std::string fileName, float x0, float y0, float x, float y) {
     char *cfileName = const_cast<char *>(fileName.c_str());
     int w = 0;
     int h = 0;
+    bool newImage = false;
     int res = LoadTexture(cfileName, w, h);
     if (res == -1)
-        return;
-    // Прокручення сторінки до вільного місця
-    cx = 0;
-    //шукаємо фігуру з найнижчою координатою
-    int y = 2000;
-    for (auto f:figures) {
-        for (auto p: f.p) {
-            if (p.y < y) {
-                y = p.y;
+        return -1;
+    if ((x0 == -1) && (y0 == -1) && (x == -1) && (y == -1)) {
+        newImage = true;
+        // Прокручення сторінки до вільного місця
+        cx = 0;
+        //шукаємо фігуру з найнижчою координатою
+        y = 2000;
+        for (auto f:figures) {
+            for (auto p: f.p) {
+                if (p.y < y) {
+                    y = p.y;
+                }
             }
         }
+        cy = y - 50 - WinHei;
+
+        y0 = WinHei - h - 60; //400;
+        x0 = WinWid - w;
+        figure fig;
+    } else {
+        w = x - x0;
+        h = y - y0;
     }
-    cy = y - 50 - WinHei;
 
 
-    // ======================================
-    float y0 = WinHei - h - 60; //400;
-    float x0 = WinWid - w;
-    figure fig;
-//    p.x = x0 + cx;
-//    p.y = y0 + cy;
-//    fig.p.push_back(p);
-//    p.x = x0 + cx + w;
-//    p.y = y0 + cy + h;
-//    fig.p.push_back(p);
     p.x = x0 + cx;
     p.y = y0 + cy;
     fig.p.push_back(p);
@@ -874,8 +870,8 @@ void insert_screenshot(std::string fileName) {
     fig.p.push_back(p);
     ++id;
     fig.id = id;
-    fig.center.x = (X0 + X0 + w) / 2.0 + cx;
-    fig.center.y = (Y0 + Y0 + h) / 2.0 + cy;
+    fig.center.x = (x0 + x0 + w) / 2.0 + cx;
+    fig.center.y = (y0 + y0 + h) / 2.0 + cy;
     fig.name = "image";
     fig.fordel = false;
     fig.visible = true;
@@ -885,19 +881,21 @@ void insert_screenshot(std::string fileName) {
     fig.start_image = textura_id.size() - 1;
     fig.end_image = 0;
 
-
-    //Вигадуємо унікальне ім'я файлу
-    std::string name = currentDateToString() + ".bmp";
-    fig.file_image = name;
-    figures.push_back(fig);
-    // =============
-    if (fileName != "tmp/" + name) {
+    if (newImage) {
+        //Вигадуємо унікальне ім'я файлу
+        std::string name = currentDateToString() + std::to_string(id) + ".bmp";
+        fig.file_image = name;
+        figures.push_back(fig);
+        // =============
         std::cout << "Переміщаємо файл " << name << ".\n";
         int n;
-
         n = rename(fileName.c_str(), ("tmp/" + name).c_str());
-    }
 
+    } else {
+        fig.file_image =  right_sym(fileName, "/");
+        figures.push_back(fig);
+    }
+    return 0;
 
 }
 
@@ -1182,13 +1180,17 @@ GLuint LoadTexture(char *FileName, int &w, int &h) {
 
 
 void load_figures() {
+    figures.empty();
+    id = 0;
+    textura_id.empty();
     texture.empty();
     std::ifstream file;
-    file.open("figs.json");
+    file.open("tmp/figs.json");
     if (file) {
         //Читаємо
         int num = 0;
-        int count;
+        int count, id;
+        std::string name, file_image;
         figure fig;
         figures.clear();
         while (file) {
@@ -1208,7 +1210,7 @@ void load_figures() {
             if (n != -1) {
                 s = right_sym(s, ":");
                 s = trim(s, ',');
-                int id = std::stoi(s);
+                id = std::stoi(s);
                 fig.id = id;
                 continue;
             }
@@ -1232,20 +1234,25 @@ void load_figures() {
             if (n != -1) {
                 s = right_sym(s, ":");
                 s = trim(s, ',');
-                std::string name = s;
-                s = trim(s, '\"');
-                fig.name = s;
+//                std::string name = s;
+                name = trim(s, '\"');
+                fig.name = name;
                 continue;
             }
             n = s.find("\"file_image\"");
             if (n != -1) {
                 s = right_sym(s, ":");
                 s = trim(s, ',');
-                std::string file_image = s;
-                s = trim(s, '\"');
-                fig.file_image = s;
-                //Підвантажуємо фото
-                insert_screenshot("tmp/" + fig.file_image);
+//                std::string file_image = s;
+                file_image = trim(s, '\"');
+                fig.file_image = file_image;
+//                //Підвантажуємо фото
+//                if (s != ""){
+//                    int res = insert_screenshot("tmp/"+fig.file_image);
+//                    if (res != 0) {
+//
+//                    }
+//                }
                 continue;
             }
             n = s.find("\"p\"");
@@ -1411,6 +1418,8 @@ void load_figures() {
                 fig.color.fonColorR = fonColorR;
                 fig.color.fonColorG = fonColorG;
                 fig.color.fonColorB = fonColorB;
+
+
             }
             n = s.find("\"start_image\"");
             if (n != -1) {
@@ -1424,9 +1433,37 @@ void load_figures() {
                 s = right_sym(s, ":");
                 s = trim(s, ',');
                 fig.end_image = std::stoi(s);
-                figures.push_back(fig);
+                if (name != "image") {
+                    figures.push_back(fig);
+                } else {
+                    //                //Підвантажуємо фото
+                    if (file_image != "") {
+                        float x0 = fig.p[0].x;
+                        float y0 = fig.p[0].y;
+                        float x = fig.p[2].x;
+                        float y = fig.p[2].y;
+                        int res = insert_screenshot("tmp/" + file_image, x0, y0, x, y);
+
+                        if (res != 0) {
+                            printf("Невдале завантаження файлу малюнка\n");
+                        }
+                    }
+                }
+
             }
         }
+//        for (auto f: figures){
+//            if (f.name=="image"){
+//                std::string fileName = "tmp/"+f.file_image;
+//                char *cfileName = const_cast<char *>(fileName.c_str());
+//                int w = 0;
+//                int h = 0;
+//                int res = LoadTexture(cfileName, w, h);
+//                f.visible = true;
+//                f.start_image = textura_id.size() - 1;
+//                f.end_image = 0;
+//            }
+//        }
 
     } else {
     }
