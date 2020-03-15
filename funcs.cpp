@@ -12,6 +12,7 @@
 #include <ctime>
 #include <fstream>
 #include <sstream>
+#include <math.h>
 
 
 using namespace std;
@@ -123,6 +124,9 @@ string button_name[BUTTONS_COUNT] = {"ar", "hand", "pen", "er", "line", "minimiz
 int button_index[BUTTONS_COUNT] = {8, 20, 1, 2, 3,-1, -2, -3};
 int button_visible[BUTTONS_COUNT] = {1, 1, 1, 1, 1, 1, 1, 1};
 
+//float dist(float x0, float y0, float x, float y){
+//    return max(x-x0,y-y0);
+//}
 
 void draw_but(int i, float x0, float y0, colorAll cAll) {
     float r, g, b;

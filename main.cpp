@@ -56,10 +56,16 @@ int penWidth = 2;
 int tool = 1;
 float erWidth = 10;
 
+float selRightBottomCornerX=0;
+float selRightBottomCornerY=0;
+float selLeftTopCornerX=0;
+float selLeftTopCornerY=0;
+
 
 std::list<figure> figures;
 point p;
 figure fig;
+bool isResize = false;
 
 void load_file(std::string fileName);
 
@@ -175,6 +181,10 @@ void Render() {
                 float  yresize = b.ymin - 4 - cy;
                 draw_line(xresize-10,yresize-5,xresize + 5,yresize-5,1, colorRamka);
                 draw_line(xresize+5,yresize-5,xresize + 5,yresize+10,1, colorRamka);
+                selRightBottomCornerX = b.xmax + 4;
+                selRightBottomCornerY = b.ymin - 4 ;
+                selLeftTopCornerX = b.xmin - 4;
+                selLeftTopCornerY = b.ymax + 4;
             }
         }
         if (selFigures.size() > 1) {
@@ -192,6 +202,10 @@ void Render() {
             float  yresize = b.ymin - 4 - cy;
             draw_line(xresize-10,yresize-5,xresize + 5,yresize-5,1, colorRamka);
             draw_line(xresize+5,yresize-5,xresize + 5,yresize+10,1, colorRamka);
+            selRightBottomCornerX = b.xmax + 4;
+            selRightBottomCornerY = b.ymin - 4 ;
+            selLeftTopCornerX = b.xmin - 4;
+            selLeftTopCornerY = b.ymax + 4;
         }
     }
 
@@ -291,7 +305,7 @@ void Draw() {
     char *s;
     int n = selFigures.size();
 
-    std::cout << "figuresCount = " << selFigures.size() << std::endl;
+//    std::cout << "figuresCount = " << selFigures.size() << std::endl;
 //    renderSpacedBitmapString(5, 60, 0,  GLUT_BITMAP_HELVETICA_18, "");
     draw_buttons(cAll);
     glFlush();
@@ -333,7 +347,7 @@ void Timer(int) {
 //    ++Angle;
 //    glutPostRedisplay();
 //    Draw();
-    std::cout << "TIMER" << std::endl;
+//    std::cout << "TIMER" << std::endl;
     std::ifstream file;
     file.open("file.bmp");
     file.close();
@@ -542,6 +556,7 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
         // -------------------------
 
         if (button == GLUT_LEFT_BUTTON) {
+            isResize = false;
             old_X0 = 0;
             old_Y0 = 0;
             old_X = ax;
@@ -687,14 +702,38 @@ void on_mouse_drag(int ax, int ay) {
                             }
                         }
                         if (l) {
+                             for (auto &p: f.p) {
+                                 if ((fmax(abs(X + cx-selRightBottomCornerX),abs(Y + cy-selRightBottomCornerY))>50)&&(isResize==false)) {
+                                     p.x -= (dx);
+                                     p.y -= (dy);
+                                 } else {
+                                     //змінюємо розмір
+                                     isResize = true;
+                                     float lxMax = selRightBottomCornerX - selLeftTopCornerX;
+                                     float lyMax = selRightBottomCornerY - selLeftTopCornerY;
+                                     float lx = selLeftTopCornerX - p.x;
+                                     float ly = selLeftTopCornerY - p.y;
+                                     p.x += dx*lx/lxMax;
+                                     p.y += dy*ly/lyMax;
 
-                            for (auto &p: f.p) {
-                                p.x -= (dx);
-                                p.y -= (dy);
-                            }
-                            f.extrem = border_polyline(f.p);
-                            f.center.x -= (dx);
-                            f.center.y -= (dy);
+                                 }
+                             }
+                             if ((fmax(abs(X + cx-selRightBottomCornerX),abs(Y + cy-selRightBottomCornerY))>50)&&(isResize==false)) {
+                                 f.extrem = border_polyline(f.p);
+                                 f.center.x -= (dx);
+                                 f.center.y -= (dy);
+                             }  else {
+                                 //змінюємо розмір
+                                 isResize = true;
+                                 float lxMax = selRightBottomCornerX - selLeftTopCornerX;
+                                 float lyMax = selRightBottomCornerY - selLeftTopCornerY;
+                                 float lx = selLeftTopCornerX - p.x;
+                                 float ly = selLeftTopCornerY - p.y;
+                                 f.extrem = border_polyline(f.p);
+                                 f.center.x += (dx*lx/lxMax);
+                                 f.center.y += (dy*ly/lyMax);
+
+                             }
                         }
                     }
                 } else { //Процес виділення
