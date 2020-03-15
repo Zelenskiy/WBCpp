@@ -149,18 +149,49 @@ void Render() {
     //Виділені фігури
     if (tool == 8) {
         //Виділені фігури
+        points ps;
         for (auto &f: figures) {
             bool l = false;
             for (auto sf : selFigures) {
                 if (sf == f.id) {
                     l = true;
-                    break;
+                    for (auto p:f.p) {
+                        ps.push_back(p);
+                    }
                 }
             }
-            if (l) {
+            if ((l) && (selFigures.size() == 1)) {
                 border b = f.extrem;
+                     float xr = ((b.xmin - 4 - cx)+(b.xmax + 4 - cx))/2;
+                float yr = b.ymax + 4 - cy;
+                colorAll colorRamka;
+                colorRamka.colorR = 1.0;
+                colorRamka.colorG = 0.0;
+                colorRamka.colorB = 0.0;
                 draw_rectangle(b.xmin - 4 - cx, b.ymin - 4 - cy, b.xmax + 4 - cx, b.ymax + 4 - cy, 1, 0, 0);
+                draw_line(xr,yr,xr,yr+25,1, colorRamka);
+                draw_circle(xr,yr+25,5,1,0,0,1,1);
+                float  xresize = b.xmax + 4 - cx;
+                float  yresize = b.ymin - 4 - cy;
+                draw_line(xresize-10,yresize-5,xresize + 5,yresize-5,1, colorRamka);
+                draw_line(xresize+5,yresize-5,xresize + 5,yresize+10,1, colorRamka);
             }
+        }
+        if (selFigures.size() > 1) {
+            border b = border_polyline(ps);
+            float xr = ((b.xmin - 4 - cx)+(b.xmax + 4 - cx))/2;
+            float yr = b.ymax + 4 - cy;
+            colorAll colorRamka;
+            colorRamka.colorR = 1.0;
+            colorRamka.colorG = 0.0;
+            colorRamka.colorB = 0.0;
+            draw_rectangle(b.xmin - 4 - cx, b.ymin - 4 - cy, b.xmax + 4 - cx, b.ymax + 4 - cy, 1, 0, 0);
+            draw_line(xr,yr,xr,yr+25,1, colorRamka);
+            draw_circle(xr,yr+25,5,1,0,0,1,1);
+            float  xresize = b.xmax + 4 - cx;
+            float  yresize = b.ymin - 4 - cy;
+            draw_line(xresize-10,yresize-5,xresize + 5,yresize-5,1, colorRamka);
+            draw_line(xresize+5,yresize-5,xresize + 5,yresize+10,1, colorRamka);
         }
     }
 
@@ -645,7 +676,7 @@ void on_mouse_drag(int ax, int ay) {
                 old_Y = Y;
                 glutPostRedisplay();
                 break;
-            case 8:                    // Тягаємо виділене
+            case 8:                    // Тягаємо
                 if (!start_select) {
                     for (auto &f: figures) {
                         bool l = false;
@@ -656,6 +687,7 @@ void on_mouse_drag(int ax, int ay) {
                             }
                         }
                         if (l) {
+
                             for (auto &p: f.p) {
                                 p.x -= (dx);
                                 p.y -= (dy);
@@ -905,7 +937,7 @@ int insert_screenshot(std::string fileName, float x0, float y0, float x, float y
         n = rename(fileName.c_str(), ("tmp/" + name).c_str());
 
     } else {
-        fig.file_image =  right_sym(fileName, "/");
+        fig.file_image = right_sym(fileName, "/");
         figures.push_back(fig);
     }
     return 0;
@@ -1191,12 +1223,12 @@ GLuint LoadTexture(char *FileName, int &w, int &h) {
     return 1;
 }
 
-void load_file(std::string fileName){
+void load_file(std::string fileName) {
     //Очищуємо tmp
     std::string command = "rm tmp/*.*";
     system(command.c_str());
     //Розархівовуємо в tmp
-    command = ("unzip "+fileName);
+    command = ("unzip " + fileName);
     system(command.c_str());
     //Завантажуємо
     load_figures();
