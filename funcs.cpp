@@ -119,13 +119,10 @@ void test_draw(colorAll cAll) {
 }
 
 
-string button_name[BUTTONS_COUNT] = {"ar", "hand", "pen", "er", "line", "minimize", "close"};
-int button_index[BUTTONS_COUNT] = {8, 20, 1, 2, 3, -1, -2};
-int button_visible[BUTTONS_COUNT] = {1, 1, 1, 1, 1, 1, 1};
+string button_name[BUTTONS_COUNT] = {"ar", "hand", "pen", "er", "line", "minimize", "close", "options"};
+int button_index[BUTTONS_COUNT] = {8, 20, 1, 2, 3,-1, -2, -3};
+int button_visible[BUTTONS_COUNT] = {1, 1, 1, 1, 1, 1, 1, 1};
 
-//void set_rgb(float r, float g, float b, int x, int y, float* var){
-//
-//}
 
 void draw_but(int i, float x0, float y0, colorAll cAll) {
     float r, g, b;

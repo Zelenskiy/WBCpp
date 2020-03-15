@@ -60,6 +60,9 @@ float erWidth = 10;
 std::list<figure> figures;
 point p;
 figure fig;
+
+void load_file(std::string fileName);
+
 bool start_select = false;
 
 int insert_screenshot(std::string fileName, float x0, float y0, float x, float y);
@@ -488,6 +491,14 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
         } else if (t == -2) { //Закриваємо
             close_app();
             glutDestroyWindow(window);
+        } else if (t == -3) { //Налаштування
+            glutIconifyWindow();
+            char *command = "./tweaker";
+            system(command);
+            read_ini();
+            command = "wmctrl -a Hello";
+            system(command);
+
         } else if (t < -10) { //Вибираємо колір
             t *= -1;
             cAll.colorR = tmpColorAll.colorR;
@@ -704,7 +715,8 @@ void on_keypress(unsigned char key, int x, int y) {
             insert_screenshot("file.bmp", -1, -1, -1, -1);
             break;
         case 108:   //L
-            load_figures();
+            load_file("lessons/2020-03-15_20_10_48.zip");
+            //load_figures();
             break;
         case 127:
             figures.clear();
@@ -1179,6 +1191,16 @@ GLuint LoadTexture(char *FileName, int &w, int &h) {
     return 1;
 }
 
+void load_file(std::string fileName){
+    //Очищуємо tmp
+    std::string command = "rm tmp/*.*";
+    system(command.c_str());
+    //Розархівовуємо в tmp
+    command = ("unzip "+fileName);
+    system(command.c_str());
+    //Завантажуємо
+    load_figures();
+}
 
 void load_figures() {
     figures.empty();
@@ -1435,10 +1457,13 @@ void load_figures() {
                 s = trim(s, ',');
                 fig.end_image = std::stoi(s);
                 if (name != "image") {
+                    id++;
+                    fig.id = id;
                     figures.push_back(fig);
                 } else {
                     //                //Підвантажуємо фото
                     if (file_image != "") {
+
                         float x0 = fig.p[0].x;
                         float y0 = fig.p[0].y;
                         float x = fig.p[2].x;
@@ -1450,7 +1475,6 @@ void load_figures() {
                         }
                     }
                 }
-
             }
         }
     } else {
@@ -1458,8 +1482,9 @@ void load_figures() {
     file.close();
     //
     cx = 0;
-    cy = 0;
-    Draw();
+//    cy = 5000;
+//    Draw();
+    glFlush();
 
 
 }
