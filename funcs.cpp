@@ -15,7 +15,9 @@
 #include <math.h>
 
 
-using namespace std;
+
+
+
 
 
 border border_polyline(points ps) {
@@ -61,7 +63,7 @@ void draw_circle(float x0, float y0, float r, float cR, float cG, float cB, int 
 }
 
 
-void draw_poly(list<point> ps, float cR, float cG, float cB, float thin) {
+void draw_poly(std::list<point> ps, float cR, float cG, float cB, float thin) {
     for (auto p:ps) {
         float x = p.x;
         float y = p.y;
@@ -115,12 +117,10 @@ void draw_line(float XX0, float YY0, float XX, float YY, int thin, colorAll cAll
 }
 
 
-void test_draw(colorAll cAll) {
-    init_buttons(cAll);
-}
 
 
-string button_name[BUTTONS_COUNT] = {"ar", "hand", "pen", "er", "line", "minimize", "close", "options", "open"};
+
+std::string button_name[BUTTONS_COUNT] = {"ar", "hand", "pen", "er", "line", "minimize", "close", "options", "open"};
 int button_index[BUTTONS_COUNT] = {8, 20, 1, 2, 3,-1, -2, -3, -4};
 int button_visible[BUTTONS_COUNT] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
 
@@ -160,9 +160,18 @@ void set_color_button(float col[5][3]) {
 
 
 void draw_rectangle(float x0, float y0, float x, float y, float r, float g, float b){
-//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glColor3f(r, g, b);
     glBegin(GL_LINE_LOOP);
+    glVertex2d(x0, y0);
+    glVertex2d(x0, y);
+    glVertex2d(x, y);
+    glVertex2d(x, y0);
+    glEnd();
+}
+
+void draw_rectangle_fill(float x0, float y0, float x, float y, float r, float g, float b){
+    glColor3f(r, g, b);
+    glBegin(GL_QUADS);
     glVertex2d(x0, y0);
     glVertex2d(x0, y);
     glVertex2d(x, y);
@@ -211,7 +220,7 @@ void draw_square(int x, int y, colorAll c){
 }
 
 
-void draw_buttons(colorAll cAll) {
+void draw_buttons(float w, float h, colorAll cAll, std::list<figure> figures) {
     //Малюємо кнопки з малюнками
     glBegin(GL_POINTS);
     for (int i = 0; i < BUTTONS_COUNT; i++) {
@@ -241,14 +250,10 @@ void draw_buttons(colorAll cAll) {
 
 
 
-    for (auto c: color_sel_btn){
 
-
-
-    }
 }
 
-void init_buttons(colorAll cAll) {
+void init_buttons(float w, float h, colorAll cAll, std::list<figure> figures) {
     float k = 4;
     for (int i = 0; i < BUTTONS_COUNT; i++) {
         buttons[i].tool = button_index[i];
@@ -260,7 +265,7 @@ void init_buttons(colorAll cAll) {
         buttons[i].name = button_name[i];
         k += 36;
     }
-    draw_buttons(cAll);
+    draw_buttons(w,h,cAll,figures);
 }
 
 

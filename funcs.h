@@ -8,8 +8,10 @@
 #include <vector>
 //#include "buttons.h"
 
-
-
+//bool isPrev =true;
+//
+//float WinWid = 800.0;
+//float WinHei = 600.0;
 
 
 
@@ -160,13 +162,13 @@ void draw_line(float XX0, float YY0, float XX, float YY, int thin, colorAll cAll
 
 void draw_circle_fill(float x0, float y0, float r, float cR, float cG, float cB);
 
-void test_draw(colorAll cAll);
-
-void init_buttons(colorAll cAll);
+void init_buttons(float w, float h, colorAll cAll, std::list<figure> figures) ;
 
 int check_buttons(float x0, float y0, colorAll &tmpColorAll);
 
-void draw_buttons(colorAll cAll);
+void draw_buttons(float w, float h, colorAll cAll, std::list<figure> figures) ;
+
+void draw_rectangle_fill(float x0, float y0, float x, float y, float r, float g, float b);
 
 
 //void draw_pictures(float x0,float y0);

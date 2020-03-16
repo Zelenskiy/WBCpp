@@ -15,10 +15,13 @@
 #include <bits/stdc++.h>
 
 
+
 float WinWid = 800.0;
 float WinHei = 600.0;
-//float WinWid = 1366.0;
-//float WinHei = 768.0;
+
+std::list<figure> figures;
+
+
 int window;
 float cx = 0;
 float cy = 0;
@@ -38,6 +41,8 @@ float old_Y0;
 float old_X;
 float old_Y;
 bool isGrid = true;
+bool isPrev =false;
+
 std::list<point> sel_points;
 
 std::list<int> selFigures;
@@ -56,13 +61,15 @@ int penWidth = 2;
 int tool = 1;
 float erWidth = 10;
 
-float selRightBottomCornerX=0;
-float selRightBottomCornerY=0;
-float selLeftTopCornerX=0;
-float selLeftTopCornerY=0;
+float selRightBottomCornerX = 0;
+float selRightBottomCornerY = 0;
+float selLeftTopCornerX = 0;
+float selLeftTopCornerY = 0;
+float selRotateX = 0;
+float selRotateY = 0;
 
 
-std::list<figure> figures;
+
 point p;
 figure fig;
 bool isResize = false;
@@ -168,44 +175,47 @@ void Render() {
             }
             if ((l) && (selFigures.size() == 1)) {
                 border b = f.extrem;
-                     float xr = ((b.xmin - 4 - cx)+(b.xmax + 4 - cx))/2;
+                float xr = ((b.xmin - 4 - cx) + (b.xmax + 4 - cx)) / 2;
                 float yr = b.ymax + 4 - cy;
                 colorAll colorRamka;
                 colorRamka.colorR = 1.0;
                 colorRamka.colorG = 0.0;
                 colorRamka.colorB = 0.0;
                 draw_rectangle(b.xmin - 4 - cx, b.ymin - 4 - cy, b.xmax + 4 - cx, b.ymax + 4 - cy, 1, 0, 0);
-                draw_line(xr,yr,xr,yr+25,1, colorRamka);
-                draw_circle(xr,yr+25,5,1,0,0,1,1);
-                float  xresize = b.xmax + 4 - cx;
-                float  yresize = b.ymin - 4 - cy;
-                draw_line(xresize-10,yresize-5,xresize + 5,yresize-5,1, colorRamka);
-                draw_line(xresize+5,yresize-5,xresize + 5,yresize+10,1, colorRamka);
+                draw_line(xr, yr, xr, yr + 25, 1, colorRamka);
+                draw_circle(xr, yr + 25, 5, 1, 0, 0, 1, 1);
+                float xresize = b.xmax + 4 - cx;
+                float yresize = b.ymin - 4 - cy;
+                draw_line(xresize - 10, yresize - 5, xresize + 5, yresize - 5, 1, colorRamka);
+                draw_line(xresize + 5, yresize - 5, xresize + 5, yresize + 10, 1, colorRamka);
                 selRightBottomCornerX = b.xmax + 4;
-                selRightBottomCornerY = b.ymin - 4 ;
+                selRightBottomCornerY = b.ymin - 4;
                 selLeftTopCornerX = b.xmin - 4;
                 selLeftTopCornerY = b.ymax + 4;
             }
         }
         if (selFigures.size() > 1) {
             border b = border_polyline(ps);
-            float xr = ((b.xmin - 4 - cx)+(b.xmax + 4 - cx))/2;
+            float xr = ((b.xmin - 4 - cx) + (b.xmax + 4 - cx)) / 2;
             float yr = b.ymax + 4 - cy;
             colorAll colorRamka;
             colorRamka.colorR = 1.0;
             colorRamka.colorG = 0.0;
             colorRamka.colorB = 0.0;
             draw_rectangle(b.xmin - 4 - cx, b.ymin - 4 - cy, b.xmax + 4 - cx, b.ymax + 4 - cy, 1, 0, 0);
-            draw_line(xr,yr,xr,yr+25,1, colorRamka);
-            draw_circle(xr,yr+25,5,1,0,0,1,1);
-            float  xresize = b.xmax + 4 - cx;
-            float  yresize = b.ymin - 4 - cy;
-            draw_line(xresize-10,yresize-5,xresize + 5,yresize-5,1, colorRamka);
-            draw_line(xresize+5,yresize-5,xresize + 5,yresize+10,1, colorRamka);
+            draw_line(xr, yr, xr, yr + 25, 1, colorRamka);
+            draw_circle(xr, yr + 25, 5, 1, 0, 0, 1, 1);
+            float xresize = b.xmax + 4 - cx;
+            float yresize = b.ymin - 4 - cy;
+            draw_line(xresize - 10, yresize - 5, xresize + 5, yresize - 5, 1, colorRamka);
+            draw_line(xresize + 5, yresize - 5, xresize + 5, yresize + 10, 1, colorRamka);
             selRightBottomCornerX = b.xmax + 4;
-            selRightBottomCornerY = b.ymin - 4 ;
+            selRightBottomCornerY = b.ymin - 4;
             selLeftTopCornerX = b.xmin - 4;
             selLeftTopCornerY = b.ymax + 4;
+            selRotateX = xr;
+            selRotateY = yr + 25;
+
         }
     }
 
@@ -296,6 +306,64 @@ void renderSpacedBitmapString(
     }
 }
 
+void draw_preview(){
+    //Кнопка показу панелі передперегляду
+    if (isPrev == true){
+        float w = WinWid;
+        float h = WinHei;
+        float x0 = w-100;
+        float y0 = h-34;
+        float x = w-4;
+        float y = 4;
+        float r = cAll.fonColorR;
+        float g = cAll.fonColorG;
+        float b = cAll.fonColorB;
+        draw_rectangle_fill(x0,y0,x,y,r,g,b);
+        draw_rectangle(x0,y0,x,y,1,0,0);
+        //Формуємо картинку на основі figures
+
+        for(auto f: figures){
+            if (f.name == "poly") {
+                float k = w / (x-x0);
+                points ps = f.p;
+                float XX0 = ps[0].x / k + x0;
+                float YY0 = h - 150 + ps[0].y / k;
+                float XX = ps[1].x / k + x0;
+                float YY = h - 150 + ps[1].y / k;
+                draw_line(XX0, YY0, XX, YY, 1, f.color);
+            } else if (f.name == "line") {
+                float k = w / (x-x0);
+                points ps = f.p;
+                float XX0 = ps[0].x / k + x0;
+                float YY0 = h - 150 + ps[0].y / k;
+                float XX = ps[1].x / k + x0;
+                float YY = h - 150 + ps[1].y / k;
+                draw_line(XX0, YY0, XX, YY, 1, f.color);
+            } else if (f.name == "image") {
+                border b;
+                float k = w / (x-x0);
+                points ps = f.p;
+                b.xmin = ps[0].x / k + x0;
+                b.ymin = ps[0].y  / k + h - 150;
+                b.xmax = ps[1].x  / k + x0;
+                b.ymax = ps[1].y  / k + h - 150;
+                point p1, p2, p3, p4;
+                p1.x = ps[0].x  / k + x0;
+                p1.y = ps[0].y  / k + h - 150;
+                p2.x = ps[1].x  / k + x0;
+                p2.y = ps[1].y  / k + h - 150;
+                p3.x = ps[2].x / k + x0;
+                p3.y = ps[2].y  / k + h - 150;
+                p4.x = ps[3].x  / k + x0;
+                p4.y = ps[3].y  / k + h - 150;
+                draw_rectangle_fill(p1.x,p1.y,p3.x,p3.y,0,0,1);
+
+            }
+        }
+
+    }
+}
+
 void Draw() {
     Render();
 //    draw_pictures();
@@ -307,7 +375,10 @@ void Draw() {
 
 //    std::cout << "figuresCount = " << selFigures.size() << std::endl;
 //    renderSpacedBitmapString(5, 60, 0,  GLUT_BITMAP_HELVETICA_18, "");
-    draw_buttons(cAll);
+    draw_buttons(WinWid, WinHei, cAll, figures);
+
+    draw_preview();
+
     glFlush();
 }
 
@@ -503,7 +574,7 @@ void Initialize() {
     init_colors();
     init_flags();
 
-    init_buttons(cAll);
+    init_buttons(WinWid, WinHei, cAll, figures);
     glClearColor(cAll.fonColorR, cAll.fonColorG, cAll.fonColorB, cAll.fonColorA);
     glMatrixMode(GL_MATRIX_MODE);
     glLoadIdentity();
@@ -525,7 +596,7 @@ float m_s(float y) {
 
 
 void on_mouse_down_up(int button, int state, int ax, int ay) {
-    if ((m_s(ay) < 35)&&(button == GLUT_LEFT_BUTTON)&&(state == GLUT_DOWN) ){
+    if ((m_s(ay) < 35) && (button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN)) {
         // --- check buttons --------
         colorAll tmpColorAll = cAll;
         int t = check_buttons(ax, m_s(ay), tmpColorAll);
@@ -543,10 +614,11 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
             read_ini();
             command = "wmctrl -a Hello";
             system(command);
-       } else if (t == -4) { //відкриваємо файл з диску
+        } else if (t == -4) { //відкриваємо файл з диску
             char filename[1024];
             FILE *f = popen("zenity --file-selection", "r");
             fgets(filename, 1024, f);
+            printf(filename, "\n");
             load_file(filename);
 
         } else if (t < -10) { //Вибираємо колір
@@ -707,38 +779,40 @@ void on_mouse_drag(int ax, int ay) {
                             }
                         }
                         if (l) {
-                             for (auto &p: f.p) {
-                                 if ((fmax(abs(X + cx-selRightBottomCornerX),abs(Y + cy-selRightBottomCornerY))>50)&&(isResize==false)) {
-                                     p.x -= (dx);
-                                     p.y -= (dy);
-                                 } else {
-                                     //змінюємо розмір
-                                     isResize = true;
-                                     float lxMax = selRightBottomCornerX - selLeftTopCornerX;
-                                     float lyMax = selRightBottomCornerY - selLeftTopCornerY;
-                                     float lx = selLeftTopCornerX - p.x;
-                                     float ly = selLeftTopCornerY - p.y;
-                                     p.x += dx*lx/lxMax;
-                                     p.y += dy*ly/lyMax;
+                            for (auto &p: f.p) {
+                                if ((fmax(abs(X + cx - selRightBottomCornerX), abs(Y + cy - selRightBottomCornerY)) >
+                                     50) && (isResize == false)) {
+                                    p.x -= (dx);
+                                    p.y -= (dy);
+                                } else {
+                                    //змінюємо розмір
+                                    isResize = true;
+                                    float lxMax = selRightBottomCornerX - selLeftTopCornerX;
+                                    float lyMax = selRightBottomCornerY - selLeftTopCornerY;
+                                    float lx = selLeftTopCornerX - p.x;
+                                    float ly = selLeftTopCornerY - p.y;
+                                    p.x += dx * lx / lxMax;
+                                    p.y += dy * ly / lyMax;
 
-                                 }
-                             }
-                             if ((fmax(abs(X + cx-selRightBottomCornerX),abs(Y + cy-selRightBottomCornerY))>50)&&(isResize==false)) {
-                                 f.extrem = border_polyline(f.p);
-                                 f.center.x -= (dx);
-                                 f.center.y -= (dy);
-                             }  else {
-                                 //змінюємо розмір
-                                 isResize = true;
-                                 float lxMax = selRightBottomCornerX - selLeftTopCornerX;
-                                 float lyMax = selRightBottomCornerY - selLeftTopCornerY;
-                                 float lx = selLeftTopCornerX - p.x;
-                                 float ly = selLeftTopCornerY - p.y;
-                                 f.extrem = border_polyline(f.p);
-                                 f.center.x += (dx*lx/lxMax);
-                                 f.center.y += (dy*ly/lyMax);
+                                }
+                            }
+                            if ((fmax(abs(X + cx - selRightBottomCornerX), abs(Y + cy - selRightBottomCornerY)) > 50) &&
+                                (isResize == false)) {
+                                f.extrem = border_polyline(f.p);
+                                f.center.x -= (dx);
+                                f.center.y -= (dy);
+                            } else {
+                                //змінюємо розмір
+                                isResize = true;
+                                float lxMax = selRightBottomCornerX - selLeftTopCornerX;
+                                float lyMax = selRightBottomCornerY - selLeftTopCornerY;
+                                float lx = selLeftTopCornerX - p.x;
+                                float ly = selLeftTopCornerY - p.y;
+                                f.extrem = border_polyline(f.p);
+                                f.center.x += (dx * lx / lxMax);
+                                f.center.y += (dy * ly / lyMax);
 
-                             }
+                            }
                         }
                     }
                 } else { //Процес виділення
@@ -773,6 +847,9 @@ void on_mouse_drag(int ax, int ay) {
 void on_keypress(unsigned char key, int x, int y) {
     std::cout << (int) key << std::endl;
     switch ((int) key) {   //ESC
+        case 9: //TAB
+            isPrev = !isPrev;
+            break;
         case 27:
             std::cout << "ESC" << std::endl;
             close_app();
@@ -785,7 +862,7 @@ void on_keypress(unsigned char key, int x, int y) {
             tool = 2;
             break;
         case 97:
-            test_draw(cAll);
+            //test_draw(cAll);
             break;
         case 115:   //S
             insert_screenshot("file.bmp", -1, -1, -1, -1);
@@ -799,7 +876,7 @@ void on_keypress(unsigned char key, int x, int y) {
             glutFullScreen();
             break;
         case 108:   //L
-            std::string command ;
+            std::string command;
             char filename[1024];
             FILE *f = popen("zenity --file-selection", "r");
             fgets(filename, 1024, f);
@@ -811,8 +888,9 @@ void on_keypress(unsigned char key, int x, int y) {
 
 void keySpecialUp(int key, int x, int y) {
     std::cout << "key " << key << std::endl;
-    switch (key) {   //UP
-        case 101:
+    switch (key) {
+
+        case 101: //UP
             cy += 100;
             figures_is_visible();
             break;
@@ -828,6 +906,7 @@ void keySpecialUp(int key, int x, int y) {
             cx += 100;
             figures_is_visible();
             break;
+
     }
     Draw();
 }
@@ -1562,6 +1641,19 @@ void load_figures() {
     file.close();
     //
     cx = 0;
+    float maxy = -100000.0;
+
+    for (auto f:figures) {
+        for (auto p: f.p) {
+            if (p.y > maxy) {
+                maxy = p.y;
+            }
+        }
+    }
+    //  cy = 1150;
+    cy = -WinHei + maxy + 50;
+
+
 //    cy = 5000;
 //    Draw();
     glFlush();
