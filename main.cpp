@@ -67,7 +67,7 @@ float selLeftTopCornerX = 0;
 float selLeftTopCornerY = 0;
 float selRotateX = 0;
 float selRotateY = 0;
-
+border selDelBorder;
 
 
 point p;
@@ -192,6 +192,14 @@ void Render() {
                 selRightBottomCornerY = b.ymin - 4;
                 selLeftTopCornerX = b.xmin - 4;
                 selLeftTopCornerY = b.ymax + 4;
+                //хрестик вилучення
+
+                selDelBorder.xmax = selRightBottomCornerX + 22;
+                selDelBorder.xmin = selRightBottomCornerX + 4;
+                selDelBorder.ymin = selLeftTopCornerY - 22;
+                selDelBorder.ymax = selLeftTopCornerY - 4;
+                draw_line(selDelBorder.xmin, selDelBorder.ymin, selDelBorder.xmax, selDelBorder.ymax, 2, colorRamka);
+                draw_line(selDelBorder.xmin, selDelBorder.ymax, selDelBorder.xmax, selDelBorder.ymin, 2, colorRamka);
             }
         }
         if (selFigures.size() > 1) {
@@ -215,49 +223,14 @@ void Render() {
             selLeftTopCornerY = b.ymax + 4;
             selRotateX = xr;
             selRotateY = yr + 25;
-
+            selDelBorder.xmax = selRightBottomCornerX + 22;
+            selDelBorder.xmin = selRightBottomCornerX + 4;
+            selDelBorder.ymin = selLeftTopCornerY - 22;
+            selDelBorder.ymax = selLeftTopCornerY - 4;
+            draw_line(selDelBorder.xmin, selDelBorder.ymin, selDelBorder.xmax, selDelBorder.ymax, 2, colorRamka);
+            draw_line(selDelBorder.xmin, selDelBorder.ymax, selDelBorder.xmax, selDelBorder.ymin, 2, colorRamka);
         }
     }
-
-//        if (selFigures.size() == 1) {
-//            int sf = selFigures.back();
-//            bool l = false;
-//            for (auto &f: figures) {
-//                if (sf == f.id) {
-//                    l = true;
-//                    border b = f.extrem;
-//                    draw_rectangle(b.xmin - 4 - cx, b.ymin - 4 - cy, b.xmax + 4 - cx, b.ymax + 4 - cy, 1, 0, 0);
-//                    break;
-//                }
-//            }
-//
-//        } else {
-//            float xmin, xmax, ymin, ymax;
-//            xmin = figures.back().extrem.xmin;
-//            ymin = figures.back().extrem.ymin;
-//            xmax = figures.back().extrem.xmax;
-//            ymax = figures.back().extrem.ymax;
-//            for (auto &f: figures) {
-//                bool l = false;
-//                border b;
-//                for (auto sf : selFigures) {
-//                    if (sf == f.id) {
-//                        if (xmin > f.extrem.xmin) xmin = f.extrem.xmin;
-//                        if (ymin > f.extrem.ymin) ymin = f.extrem.ymin;
-//                        if (xmax < f.extrem.xmax) xmax = f.extrem.xmax;
-//                        if (ymax < f.extrem.ymax) ymax = f.extrem.ymax;
-//                        break;
-//                    }
-//                }
-//            }
-//            draw_rectangle(xmin - 4 - cx, ymin - 4 - cy, xmax + 4 - cx, ymax + 4 - cy, 1, 0, 0);
-//
-//
-//        }
-
-
-
-
 }
 
 void draw_pictures_all() {
@@ -330,7 +303,7 @@ void draw_preview(){
                 float YY0 = h - 150 + ps[0].y / k;
                 float XX = ps[1].x / k + x0;
                 float YY = h - 150 + ps[1].y / k;
-                draw_line(XX0, YY0, XX, YY, 1, f.color);
+                draw_line_for_preview(XX0, YY0, XX, YY, 1, f.color);
             } else if (f.name == "line") {
                 float k = w / (x-x0);
                 points ps = f.p;
@@ -338,7 +311,7 @@ void draw_preview(){
                 float YY0 = h - 150 + ps[0].y / k;
                 float XX = ps[1].x / k + x0;
                 float YY = h - 150 + ps[1].y / k;
-                draw_line(XX0, YY0, XX, YY, 1, f.color);
+                draw_line_for_preview(XX0, YY0, XX, YY, 1, f.color);
             } else if (f.name == "image") {
                 border b;
                 float k = w / (x-x0);
@@ -409,9 +382,7 @@ void draw_to_figures(int XX0, int YY0, int XX, int YY, colorAll cAll, float thin
 }
 
 void figures_update() {
-//    std::list<figure> tmpList;
     figures.remove_if([](figure n) { return n.fordel == true; });
-//    for (auto f: figures) { f.extrem = border_polyline(f.p);}
 }
 
 void Timer(int) {
@@ -594,8 +565,27 @@ float m_s(float y) {
     return WinHei - y - 60;
 }
 
+bool is_on_bullon_on_delete_select(float x, float y){
+    return (selDelBorder.xmin<x)&&(x<selDelBorder.xmax)&&(selDelBorder.ymin<y)&&(y<selDelBorder.ymax);
+}
 
 void on_mouse_down_up(int button, int state, int ax, int ay) {
+    if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN) && (is_on_bullon_on_delete_select(ax, m_s(ay))==1)){
+        printf("DELLLLL\n");
+        for (auto &f: figures){
+            for (int sF: selFigures){
+                if (f.id == sF){
+                    f.fordel = true;
+                }
+            }
+        }
+        selFigures.empty();
+        figures_update();
+        selDelBorder.xmin = 0;
+        selDelBorder.ymin = 0;
+        selDelBorder.xmax = 0;
+        selDelBorder.ymax = 0;
+    } else
     if ((m_s(ay) < 35) && (button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN)) {
         // --- check buttons --------
         colorAll tmpColorAll = cAll;
@@ -849,6 +839,7 @@ void on_keypress(unsigned char key, int x, int y) {
     switch ((int) key) {   //ESC
         case 9: //TAB
             isPrev = !isPrev;
+            glFlush();
             break;
         case 27:
             std::cout << "ESC" << std::endl;
@@ -1067,6 +1058,7 @@ int insert_screenshot(std::string fileName, float x0, float y0, float x, float y
         fig.file_image = right_sym(fileName, "/");
         figures.push_back(fig);
     }
+    glFlush();
     return 0;
 
 }

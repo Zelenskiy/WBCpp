@@ -115,6 +115,14 @@ void draw_line(float XX0, float YY0, float XX, float YY, int thin, colorAll cAll
     glEnd();
     glFlush();
 }
+void draw_line_for_preview(float XX0, float YY0, float XX, float YY, int thin, colorAll cAll) {
+    glColor3f(cAll.colorR, cAll.colorG, cAll.colorB);
+    glBegin(GL_POINTS);
+    glVertex3d(XX0, YY0, 0.0);
+    glVertex3d(XX, YY, 0.0);
+    glEnd();
+//    glFlush();
+}
 
 
 

@@ -170,6 +170,8 @@ void draw_buttons(float w, float h, colorAll cAll, std::list<figure> figures) ;
 
 void draw_rectangle_fill(float x0, float y0, float x, float y, float r, float g, float b);
 
+void draw_line_for_preview(float XX0, float YY0, float XX, float YY, int thin, colorAll cAll);
+
 
 //void draw_pictures(float x0,float y0);
 //void insert_screenshot();
