@@ -42,10 +42,11 @@ float old_X;
 float old_Y;
 bool isGrid = true;
 bool isPrev =false;
+int countSel=0;
 
 std::list<point> sel_points;
 
-std::list<int> selFigures;
+//std::list<int> selFigures;
 
 struct textura_struct {
     int W;
@@ -160,17 +161,15 @@ void Render() {
     if (tool == 8) {
         //Виділені фігури
         points ps;
-        for (auto &f: figures) {
-            bool l = false;
-            for (auto sf : selFigures) {
-                if (sf == f.id) {
-                    l = true;
-                    for (auto p:f.p) {
-                        ps.push_back(p);
-                    }
+        for (auto f: figures) {
+            for (auto p:f.p){
+                if (f.select){
+                    ps.push_back(p);
                 }
             }
-            if ((l) && (selFigures.size() == 1)) {
+        }
+        for (auto f: figures) {
+            if ((f.select) && (countSel == 1)) {
                 border b = f.extrem;
                 float xr = ((b.xmin - 4 - cx) + (b.xmax + 4 - cx)) / 2;
                 float yr = b.ymax + 4 - cy;
@@ -207,7 +206,7 @@ void Render() {
 
             }
         }
-        if (selFigures.size() > 1) {    //Коли виділено багато об'єктів
+        if (countSel > 1) {    //Коли виділено багато об'єктів
             border b = border_polyline(ps);
             float xr = ((b.xmin - 4 - cx) + (b.xmax + 4 - cx)) / 2;
             float yr = b.ymax + 4 - cy;
@@ -357,7 +356,7 @@ void Draw() {
         draw_grid(WinWid, WinHei);
     }
     char *s;
-    int n = selFigures.size();
+    int n = countSel;
 
 //    std::cout << "figuresCount = " << selFigures.size() << std::endl;
 //    renderSpacedBitmapString(5, 60, 0,  GLUT_BITMAP_HELVETICA_18, "");
@@ -586,13 +585,12 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
     if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN) && (is_on_bullon_on_delete_select(ax, m_s(ay))==1)){
         printf("DELLLLL\n");
         for (auto &f: figures){
-            for (int sF: selFigures){
-                if (f.id == sF){
-                    f.fordel = true;
-                }
+            if (f.select){
+                f.fordel = true;
             }
         }
-        selFigures.empty();
+        countSel = 0;
+
         figures_update();
         selDelBorder.xmin = 0;
         selDelBorder.ymin = 0;
@@ -648,14 +646,15 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
                 Y0 = m_s(ay);
                 if (tool == 8) {
                     //Якщо виділеного немає
-                    if (selFigures.size() == 0) {
+                    if (countSel == 0) {
                         bool flag = false;
-                        int fig = 0;
-                        for (auto f: figures) {
+                        figure fig;
+                        for (auto &f: figures) {
                             if ((ax + cx > f.extrem.xmin) && (ax + cx < f.extrem.xmax) &&
                                 (m_s(ay) + cy > f.extrem.ymin) && (m_s(ay) + cy < f.extrem.ymax)) {
                                 flag = true;
-                                fig = f.id;
+                                countSel++;
+                                f.select = true;
                                 break;
                             }
                         }
@@ -663,28 +662,22 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
                             //Якщо під курсором нічого немає
                             //почнемо виділення рамкою
                             start_select = true;
-                        } else {
-                            //Якщо під курсором є фігура
-                            //Виділимо її
-
-                            selFigures.push_back(fig);
                         }
                     } else {
                         //Якщо виділене є
                         points ps;
-                        for (auto sF: selFigures) {
-                            point p;
-                            for (auto f: figures) {
-                                if (f.id == sF) {
-                                    p.x = f.extrem.xmin;
-                                    p.y = f.extrem.ymin;
-                                    ps.push_back(p);
-                                    p.x = f.extrem.xmax;
-                                    p.y = f.extrem.ymax;
-                                    ps.push_back(p);
-                                }
+                        point p;
+                        for (auto f: figures) {
+                            if (f.select) {
+                                p.x = f.extrem.xmin;
+                                p.y = f.extrem.ymin;
+                                ps.push_back(p);
+                                p.x = f.extrem.xmax;
+                                p.y = f.extrem.ymax;
+                                ps.push_back(p);
                             }
                         }
+
                         border b = border_polyline(ps);
                         if ((ax + cx > b.xmin) && (ax + cx < b.xmax) &&
                             (m_s(ay) + cy > b.ymin) && (m_s(ay) + cy < b.ymax)) {
@@ -693,7 +686,10 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
 
                         } else {
                             //Якщо курсор за межами виділених
-                            selFigures.clear();
+                            countSel = 0;
+                            for (auto &f:figures) {
+                                f.select = false;
+                            }
                         }
                     }
                 }
@@ -774,13 +770,8 @@ void on_mouse_drag(int ax, int ay) {
             case 8:                    // Тягаємо
                 if (!start_select) {
                     for (auto &f: figures) {
-                        bool l = false;
-                        for (auto sf : selFigures) {
-                            if (sf == f.id) {
-                                l = true;
-                                break;
-                            }
-                        }
+                        bool l = f.select;
+
                         if (l) {
                             for (auto &p: f.p) {
                                 if ((fmax(abs(X + cx - selRightBottomCornerX), abs(Y + cy - selRightBottomCornerY)) >
@@ -824,12 +815,14 @@ void on_mouse_drag(int ax, int ay) {
                     float xx = std::fmax(X0, X);
                     float yy0 = std::fmin(Y0, Y);
                     float yy = std::fmax(Y0, Y);
-                    selFigures.clear();
-                    for (auto f: figures) {
+                    countSel = 0;
+
+                    for (auto &f: figures) {
                         point b;
                         b = f.center;
                         if ((xx0 + cx < b.x) && (xx + cx > b.x) && (yy0 + cy < b.y) && (yy + cy > b.y)) {
-                            selFigures.push_back(f.id);
+                            countSel++;
+                            f.select = true;
                         }
                     }
                 }
