@@ -168,6 +168,8 @@ void Render() {
                 }
             }
         }
+
+
         for (auto f: figures) {
             if ((f.select) && (countSel == 1)) {
                 border b = f.extrem;
