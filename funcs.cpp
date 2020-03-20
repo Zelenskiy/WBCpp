@@ -167,8 +167,9 @@ void set_color_button(float col[5][3]) {
 
 
 
-void draw_rectangle(float x0, float y0, float x, float y, float r, float g, float b){
+void draw_rectangle(float x0, float y0, float x, float y, float thin, float r, float g, float b){
     glColor3f(r, g, b);
+    glLineWidth(thin);
     glBegin(GL_LINE_LOOP);
     glVertex2d(x0, y0);
     glVertex2d(x0, y);

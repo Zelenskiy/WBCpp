@@ -68,6 +68,7 @@ float selLeftTopCornerY = 0;
 float selRotateX = 0;
 float selRotateY = 0;
 border selDelBorder;
+border selCopyBorder;
 
 
 point p;
@@ -137,10 +138,6 @@ void Render() {
                 b.ymin = ps[0].y - cy;
                 b.xmax = ps[1].x - cx;
                 b.ymax = ps[1].y - cy;
-//                colorAll c;
-//                c.colorR = 1.0;
-//                c.colorG = 1.0;
-//                c.colorB = 1.0;
                 point p1, p2, p3, p4;
                 p1.x = ps[0].x - cx;
                 p1.y = ps[0].y - cy;
@@ -181,7 +178,7 @@ void Render() {
                 colorRamka.colorR = 1.0;
                 colorRamka.colorG = 0.0;
                 colorRamka.colorB = 0.0;
-                draw_rectangle(b.xmin - 4 - cx, b.ymin - 4 - cy, b.xmax + 4 - cx, b.ymax + 4 - cy, 1, 0, 0);
+                draw_rectangle(b.xmin - 4 - cx, b.ymin - 4 - cy, b.xmax + 4 - cx, b.ymax + 4 - cy,1, 1, 0, 0);
                 draw_line(xr, yr, xr, yr + 25, 1, colorRamka);
                 draw_circle(xr, yr + 25, 5, 1, 0, 0, 1, 1);
                 float xresize = b.xmax + 4 - cx;
@@ -194,15 +191,23 @@ void Render() {
                 selLeftTopCornerY = b.ymax + 4;
                 //хрестик вилучення
 
-                selDelBorder.xmax = selRightBottomCornerX + 22;
-                selDelBorder.xmin = selRightBottomCornerX + 4;
-                selDelBorder.ymin = selLeftTopCornerY - 22;
-                selDelBorder.ymax = selLeftTopCornerY - 4;
-                draw_line(selDelBorder.xmin, selDelBorder.ymin, selDelBorder.xmax, selDelBorder.ymax, 2, colorRamka);
-                draw_line(selDelBorder.xmin, selDelBorder.ymax, selDelBorder.xmax, selDelBorder.ymin, 2, colorRamka);
+                selDelBorder.xmax = selRightBottomCornerX + 22 - cx;
+                selDelBorder.xmin = selRightBottomCornerX + 4 - cx;
+                selDelBorder.ymin = selLeftTopCornerY - 22 - cy;
+                selDelBorder.ymax = selLeftTopCornerY - 4 - cy;
+                draw_line(selDelBorder.xmin, selDelBorder.ymin, selDelBorder.xmax, selDelBorder.ymax, 4, colorRamka);
+                draw_line(selDelBorder.xmin, selDelBorder.ymax, selDelBorder.xmax, selDelBorder.ymin, 4, colorRamka);
+
+                selCopyBorder.xmax = selRightBottomCornerX + 22 - cx;
+                selCopyBorder.xmin = selRightBottomCornerX + 4 - cx;
+                selCopyBorder.ymin = selLeftTopCornerY - 52 - cy;
+                selCopyBorder.ymax = selLeftTopCornerY - 34 - cy;
+                draw_rectangle(selCopyBorder.xmin, selCopyBorder.ymin+4, selCopyBorder.xmax-4, selCopyBorder.ymax+4, 2,1,0,0);
+                draw_rectangle(selCopyBorder.xmin + 4, selCopyBorder.ymin, selCopyBorder.xmax, selCopyBorder.ymax ,2, 1,0,0);
+
             }
         }
-        if (selFigures.size() > 1) {
+        if (selFigures.size() > 1) {    //Коли виділено багато об'єктів
             border b = border_polyline(ps);
             float xr = ((b.xmin - 4 - cx) + (b.xmax + 4 - cx)) / 2;
             float yr = b.ymax + 4 - cy;
@@ -210,7 +215,7 @@ void Render() {
             colorRamka.colorR = 1.0;
             colorRamka.colorG = 0.0;
             colorRamka.colorB = 0.0;
-            draw_rectangle(b.xmin - 4 - cx, b.ymin - 4 - cy, b.xmax + 4 - cx, b.ymax + 4 - cy, 1, 0, 0);
+            draw_rectangle(b.xmin - 4 - cx, b.ymin - 4 - cy, b.xmax + 4 - cx, b.ymax + 4 - cy,1, 1, 0, 0);
             draw_line(xr, yr, xr, yr + 25, 1, colorRamka);
             draw_circle(xr, yr + 25, 5, 1, 0, 0, 1, 1);
             float xresize = b.xmax + 4 - cx;
@@ -223,12 +228,20 @@ void Render() {
             selLeftTopCornerY = b.ymax + 4;
             selRotateX = xr;
             selRotateY = yr + 25;
-            selDelBorder.xmax = selRightBottomCornerX + 22;
-            selDelBorder.xmin = selRightBottomCornerX + 4;
-            selDelBorder.ymin = selLeftTopCornerY - 22;
-            selDelBorder.ymax = selLeftTopCornerY - 4;
-            draw_line(selDelBorder.xmin, selDelBorder.ymin, selDelBorder.xmax, selDelBorder.ymax, 2, colorRamka);
-            draw_line(selDelBorder.xmin, selDelBorder.ymax, selDelBorder.xmax, selDelBorder.ymin, 2, colorRamka);
+            selDelBorder.xmax = selRightBottomCornerX + 22 - cx;
+            selDelBorder.xmin = selRightBottomCornerX + 4 - cx;
+            selDelBorder.ymin = selLeftTopCornerY - 22 - cy;
+            selDelBorder.ymax = selLeftTopCornerY - 4 - cy;
+            draw_line(selDelBorder.xmin, selDelBorder.ymin, selDelBorder.xmax, selDelBorder.ymax, 4, colorRamka);
+            draw_line(selDelBorder.xmin, selDelBorder.ymax, selDelBorder.xmax, selDelBorder.ymin, 4, colorRamka);
+
+            selCopyBorder.xmax = selRightBottomCornerX + 22 - cx;
+            selCopyBorder.xmin = selRightBottomCornerX + 4 - cx;
+            selCopyBorder.ymin = selLeftTopCornerY - 52 - cy;
+            selCopyBorder.ymax = selLeftTopCornerY - 34 - cy;
+            draw_rectangle(selCopyBorder.xmin, selCopyBorder.ymin+4, selCopyBorder.xmax-4, selCopyBorder.ymax+4, 2,1,0,0);
+            draw_rectangle(selCopyBorder.xmin + 4, selCopyBorder.ymin, selCopyBorder.xmax, selCopyBorder.ymax , 2,4,0,0);
+
         }
     }
 }
@@ -292,7 +305,7 @@ void draw_preview(){
         float g = cAll.fonColorG;
         float b = cAll.fonColorB;
         draw_rectangle_fill(x0,y0,x,y,r,g,b);
-        draw_rectangle(x0,y0,x,y,1,0,0);
+        draw_rectangle(x0,y0,x,y,1,1,0,0);
         //Формуємо картинку на основі figures
 
         for(auto f: figures){
@@ -806,7 +819,7 @@ void on_mouse_drag(int ax, int ay) {
                         }
                     }
                 } else { //Процес виділення
-                    draw_rectangle(X0, Y0, X, Y, 1, 0, 0);
+                    draw_rectangle(X0, Y0, X, Y,1, 1, 0, 0);
                     float xx0 = std::fmin(X0, X);
                     float xx = std::fmax(X0, X);
                     float yy0 = std::fmin(Y0, Y);

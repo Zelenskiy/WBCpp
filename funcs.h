@@ -192,7 +192,7 @@ void save_figures(std::list<figure> figures);
 std::string trim (std::string s, char c);
 
 void set_color_button(float col[5][3]);
-void draw_rectangle(float x0, float y0, float x, float y, float r, float g, float b);
+void draw_rectangle(float x0, float y0, float x, float y, float thin, float r, float g, float b);
 
 template <typename T>
 std::string toString(T val);
