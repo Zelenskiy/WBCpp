@@ -69,6 +69,7 @@ typedef struct figure {
     colorAll color;
     GLuint start_image = 0;
     int end_image = 0;
+    bool select = false;
 } _figure;
 
 
