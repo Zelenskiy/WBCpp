@@ -121,9 +121,9 @@ void draw_line_for_preview(float XX0, float YY0, float XX, float YY, int thin, c
 }
 
 
-std::string button_name[BUTTONS_COUNT] = {"ar", "hand", "pen", "er", "line", "minimize", "close", "options", "open"};
-int button_index[BUTTONS_COUNT] = {8, 20, 1, 2, 3, -1, -2, -3, -4};
-int button_visible[BUTTONS_COUNT] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+std::string button_name[BUTTONS_COUNT] = {"ar", "hand", "pen", "er", "line", "minimize", "close", "options", "open", "undo"};
+int button_index[BUTTONS_COUNT] = {8, 20, 1, 2, 3, -1, -2, -3, -4, -6};
+int button_visible[BUTTONS_COUNT] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 //float dist(float x0, float y0, float x, float y){
 //    return max(x-x0,y-y0);
@@ -206,7 +206,10 @@ int check_buttons(float x0, float y0, colorAll &tmpColorAll) {
             tmpColorAll.colorB = color_button[i][2];
             return -100;
         }
-
+    }
+    // --- перевірка прокрутки вниз
+    if ((x0>move_buttons[0][0])&&(x0<move_buttons[0][2])&&(y0>move_buttons[0][1])&&(y0<move_buttons[0][3])){
+        return -5;
     }
     return 0;
 }
@@ -265,7 +268,7 @@ void draw_buttons(float w, float h, colorAll cAll, std::list<figure> figures) {
     float x3 = move_buttons[0][2] - 4;
     float y3 = (move_buttons[0][1] + move_buttons[0][3]) / 2 + 6;
 
-    glColor3f(0.0, 0.0, 1.0);
+    glColor3f(0.01, 0.42, 0.13);
     glBegin(GL_TRIANGLE_FAN);
     glVertex2d(x1, y1);
     glVertex2d(x2, y2);

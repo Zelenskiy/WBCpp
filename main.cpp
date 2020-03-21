@@ -594,7 +594,9 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
             fgets(filename, 1024, f);
             printf(filename, "\n");
             load_file(filename);
-
+        } else if (t == -5) { //прокрутка вниз
+            cy -= 100;
+            figures_is_visible();
         } else if (t < -10) { //Вибираємо колір
             t *= -1;
             cAll.colorR = tmpColorAll.colorR;
@@ -846,11 +848,11 @@ void keySpecialUp(int key, int x, int y) {
             cy += 100;
             figures_is_visible();
             break;
-        case 103: //LEFT
+        case 103: //DOWN
             cy -= 100;
             figures_is_visible();
             break;
-        case 100:
+        case 100://LEFT
             cx -= 100;
             figures_is_visible();
             break;
