@@ -62,12 +62,12 @@ int penWidth = 2;
 int tool = 1;
 float erWidth = 10;
 
-float selRightBottomCornerX = 0;
-float selRightBottomCornerY = 0;
-float selLeftTopCornerX = 0;
-float selLeftTopCornerY = 0;
-float selRotateX = 0;
-float selRotateY = 0;
+float selRightBottomCornerX = -11111111;
+float selRightBottomCornerY = -11111111;
+float selLeftTopCornerX = -11111111;
+float selLeftTopCornerY = -11111111;
+float selRotateX = -11111111;
+float selRotateY = -11111111;
 border selDelBorder;
 border selCopyBorder;
 
@@ -77,6 +77,8 @@ figure fig;
 bool isResize = false;
 
 void load_file(std::string fileName);
+
+void figures_update();
 
 bool start_select = false;
 
@@ -92,6 +94,20 @@ GLuint LoadTexture(char *FileName, int &w, int &h);
 
 void draw_texture(GLuint text_nun, point p1, point p2, point p3, point p4);
 
+void unselect(){
+    countSel = 0;
+    figures_update();
+    selDelBorder.xmin = -11111111;
+    selDelBorder.ymin = -11111111;
+    selDelBorder.xmax = -11111111;
+    selDelBorder.ymax = -11111111;
+    selRightBottomCornerX = -111111111;
+    selRightBottomCornerY = -111111111;
+    selLeftTopCornerX = -111111111;
+    selLeftTopCornerY = -111111111;
+    selRotateX =  -111111111;
+    selRotateY =  -111111111;
+}
 
 void figures_is_visible() {
     for (auto &f: figures) {
@@ -114,7 +130,6 @@ void Render() {
     int i = 0;
     for (figure f: figures) {
         if ((f.visible == 1)) {
-
             if (f.name == "poly") {
                 points ps = f.p;
                 float XX0 = ps[0].x;
@@ -168,47 +183,7 @@ void Render() {
                 }
             }
         }
-
-
-        for (auto f: figures) {
-            if ((f.select) && (countSel == 1)) {
-                border b = f.extrem;
-                float xr = ((b.xmin - 4 - cx) + (b.xmax + 4 - cx)) / 2;
-                float yr = b.ymax + 4 - cy;
-                colorAll colorRamka;
-                colorRamka.colorR = 1.0;
-                colorRamka.colorG = 0.0;
-                colorRamka.colorB = 0.0;
-                draw_rectangle(b.xmin - 4 - cx, b.ymin - 4 - cy, b.xmax + 4 - cx, b.ymax + 4 - cy,1, 1, 0, 0);
-                draw_line(xr, yr, xr, yr + 25, 1, colorRamka);
-                draw_circle(xr, yr + 25, 5, 1, 0, 0, 1, 1);
-                float xresize = b.xmax + 4 - cx;
-                float yresize = b.ymin - 4 - cy;
-                draw_line(xresize - 10, yresize - 5, xresize + 5, yresize - 5, 1, colorRamka);
-                draw_line(xresize + 5, yresize - 5, xresize + 5, yresize + 10, 1, colorRamka);
-                selRightBottomCornerX = b.xmax + 4;
-                selRightBottomCornerY = b.ymin - 4;
-                selLeftTopCornerX = b.xmin - 4;
-                selLeftTopCornerY = b.ymax + 4;
-                //хрестик вилучення
-
-                selDelBorder.xmax = selRightBottomCornerX + 22 - cx;
-                selDelBorder.xmin = selRightBottomCornerX + 4 - cx;
-                selDelBorder.ymin = selLeftTopCornerY - 22 - cy;
-                selDelBorder.ymax = selLeftTopCornerY - 4 - cy;
-                draw_line(selDelBorder.xmin, selDelBorder.ymin, selDelBorder.xmax, selDelBorder.ymax, 4, colorRamka);
-                draw_line(selDelBorder.xmin, selDelBorder.ymax, selDelBorder.xmax, selDelBorder.ymin, 4, colorRamka);
-
-                selCopyBorder.xmax = selRightBottomCornerX + 22 - cx;
-                selCopyBorder.xmin = selRightBottomCornerX + 4 - cx;
-                selCopyBorder.ymin = selLeftTopCornerY - 52 - cy;
-                selCopyBorder.ymax = selLeftTopCornerY - 34 - cy;
-                draw_rectangle(selCopyBorder.xmin, selCopyBorder.ymin+4, selCopyBorder.xmax-4, selCopyBorder.ymax+4, 2,1,0,0);
-                draw_rectangle(selCopyBorder.xmin + 4, selCopyBorder.ymin, selCopyBorder.xmax, selCopyBorder.ymax ,2, 1,0,0);
-
-            }
-        }
-        if (countSel > 1) {    //Коли виділено багато об'єктів
+        if (ps.size()>0) {
             border b = border_polyline(ps);
             float xr = ((b.xmin - 4 - cx) + (b.xmax + 4 - cx)) / 2;
             float yr = b.ymax + 4 - cy;
@@ -216,7 +191,7 @@ void Render() {
             colorRamka.colorR = 1.0;
             colorRamka.colorG = 0.0;
             colorRamka.colorB = 0.0;
-            draw_rectangle(b.xmin - 4 - cx, b.ymin - 4 - cy, b.xmax + 4 - cx, b.ymax + 4 - cy,1, 1, 0, 0);
+            draw_rectangle(b.xmin - 4 - cx, b.ymin - 4 - cy, b.xmax + 4 - cx, b.ymax + 4 - cy, 1, 1, 0, 0);
             draw_line(xr, yr, xr, yr + 25, 1, colorRamka);
             draw_circle(xr, yr + 25, 5, 1, 0, 0, 1, 1);
             float xresize = b.xmax + 4 - cx;
@@ -240,10 +215,12 @@ void Render() {
             selCopyBorder.xmin = selRightBottomCornerX + 4 - cx;
             selCopyBorder.ymin = selLeftTopCornerY - 52 - cy;
             selCopyBorder.ymax = selLeftTopCornerY - 34 - cy;
-            draw_rectangle(selCopyBorder.xmin, selCopyBorder.ymin+4, selCopyBorder.xmax-4, selCopyBorder.ymax+4, 2,1,0,0);
-            draw_rectangle(selCopyBorder.xmin + 4, selCopyBorder.ymin, selCopyBorder.xmax, selCopyBorder.ymax , 2,4,0,0);
-
+            draw_rectangle(selCopyBorder.xmin, selCopyBorder.ymin + 4, selCopyBorder.xmax - 4, selCopyBorder.ymax + 4,
+                           2, 1, 0, 0);
+            draw_rectangle(selCopyBorder.xmin + 4, selCopyBorder.ymin, selCopyBorder.xmax, selCopyBorder.ymax, 2, 4, 0,
+                           0);
         }
+
     }
 }
 
@@ -591,13 +568,7 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
                 f.fordel = true;
             }
         }
-        countSel = 0;
-
-        figures_update();
-        selDelBorder.xmin = 0;
-        selDelBorder.ymin = 0;
-        selDelBorder.xmax = 0;
-        selDelBorder.ymax = 0;
+        unselect();
     } else
     if ((m_s(ay) < 35) && (button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN)) {
         // --- check buttons --------
@@ -772,12 +743,10 @@ void on_mouse_drag(int ax, int ay) {
             case 8:                    // Тягаємо
                 if (!start_select) {
                     for (auto &f: figures) {
-                        bool l = f.select;
-
-                        if (l) {
+                        if (f.select) {
                             for (auto &p: f.p) {
                                 if ((fmax(abs(X + cx - selRightBottomCornerX), abs(Y + cy - selRightBottomCornerY)) >
-                                     50) && (isResize == false)) {
+                                     25) && (isResize == false)) {
                                     p.x -= (dx);
                                     p.y -= (dy);
                                 } else {
@@ -789,26 +758,11 @@ void on_mouse_drag(int ax, int ay) {
                                     float ly = selLeftTopCornerY - p.y;
                                     p.x += dx * lx / lxMax;
                                     p.y += dy * ly / lyMax;
-
                                 }
                             }
-                            if ((fmax(abs(X + cx - selRightBottomCornerX), abs(Y + cy - selRightBottomCornerY)) > 50) &&
-                                (isResize == false)) {
-                                f.extrem = border_polyline(f.p);
-                                f.center.x -= (dx);
-                                f.center.y -= (dy);
-                            } else {
-                                //змінюємо розмір
-                                isResize = true;
-                                float lxMax = selRightBottomCornerX - selLeftTopCornerX;
-                                float lyMax = selRightBottomCornerY - selLeftTopCornerY;
-                                float lx = selLeftTopCornerX - p.x;
-                                float ly = selLeftTopCornerY - p.y;
-                                f.extrem = border_polyline(f.p);
-                                f.center.x += (dx * lx / lxMax);
-                                f.center.y += (dy * ly / lyMax);
-
-                            }
+                            f.extrem = border_polyline(f.p);
+                            f.center.x = (f.extrem.xmin +f.extrem.xmax)/2;
+                            f.center.y = (f.extrem.ymin +f.extrem.ymax)/2;
                         }
                     }
                 } else { //Процес виділення
@@ -817,8 +771,7 @@ void on_mouse_drag(int ax, int ay) {
                     float xx = std::fmax(X0, X);
                     float yy0 = std::fmin(Y0, Y);
                     float yy = std::fmax(Y0, Y);
-                    countSel = 0;
-
+                    unselect();
                     for (auto &f: figures) {
                         point b;
                         b = f.center;
@@ -1066,6 +1019,9 @@ int insert_screenshot(std::string fileName, float x0, float y0, float x, float y
         fig.file_image = right_sym(fileName, "/");
         figures.push_back(fig);
     }
+    //Зберігаємо фігури до файлу
+    save_figures(figures);
+
     glFlush();
     return 0;
 
@@ -1106,203 +1062,6 @@ void draw_texture(GLuint text_nun, point p1, point p2, point p3, point p4) {
     glEnd();
     glDisable(GL_TEXTURE_2D);
 }
-
-//int insert_screenshot_old(std::string fileName) {
-//    //char *fileName = "file.bmp";
-//    // открываем файл
-//    std::ifstream fileStream(fileName, std::ifstream::binary);
-//    if (!fileStream) {
-//        std::cout << "Error opening file '" << fileName << "'." << std::endl;
-//        return 0;
-//    }
-//
-//
-//    // заголовк изображения
-//    BITMAPFILEHEADER fileHeader;
-//    read(fileStream, fileHeader.bfType, sizeof(fileHeader.bfType));
-//    read(fileStream, fileHeader.bfSize, sizeof(fileHeader.bfSize));
-//    read(fileStream, fileHeader.bfReserved1, sizeof(fileHeader.bfReserved1));
-//    read(fileStream, fileHeader.bfReserved2, sizeof(fileHeader.bfReserved2));
-//    read(fileStream, fileHeader.bfOffBits, sizeof(fileHeader.bfOffBits));
-//
-//    if (fileHeader.bfType != 0x4D42) {
-//        std::cout << "Error: '" << fileName << "' is not BMP file." << std::endl;
-//        return 0;
-//    }
-//
-//    // информация изображения
-//    BITMAPINFOHEADER fileInfoHeader;
-//    read(fileStream, fileInfoHeader.biSize, sizeof(fileInfoHeader.biSize));
-//
-//    // bmp core
-//    if (fileInfoHeader.biSize >= 12) {
-//        read(fileStream, fileInfoHeader.biWidth, sizeof(fileInfoHeader.biWidth));
-//        read(fileStream, fileInfoHeader.biHeight, sizeof(fileInfoHeader.biHeight));
-//        read(fileStream, fileInfoHeader.biPlanes, sizeof(fileInfoHeader.biPlanes));
-//        read(fileStream, fileInfoHeader.biBitCount, sizeof(fileInfoHeader.biBitCount));
-//    }
-//
-//    // получаем информацию о битности
-//    int colorsCount = fileInfoHeader.biBitCount >> 3;
-//    if (colorsCount < 3) {
-//        colorsCount = 3;
-//    }
-//
-//    int bitsOnColor = fileInfoHeader.biBitCount / colorsCount;
-//    int maskValue = (1 << bitsOnColor) - 1;
-//
-//    // bmp v1
-//    if (fileInfoHeader.biSize >= 40) {
-//        read(fileStream, fileInfoHeader.biCompression, sizeof(fileInfoHeader.biCompression));
-//        read(fileStream, fileInfoHeader.biSizeImage, sizeof(fileInfoHeader.biSizeImage));
-//        read(fileStream, fileInfoHeader.biXPelsPerMeter, sizeof(fileInfoHeader.biXPelsPerMeter));
-//        read(fileStream, fileInfoHeader.biYPelsPerMeter, sizeof(fileInfoHeader.biYPelsPerMeter));
-//        read(fileStream, fileInfoHeader.biClrUsed, sizeof(fileInfoHeader.biClrUsed));
-//        read(fileStream, fileInfoHeader.biClrImportant, sizeof(fileInfoHeader.biClrImportant));
-//    }
-//
-//    // bmp v2
-//    fileInfoHeader.biRedMask = 0;
-//    fileInfoHeader.biGreenMask = 0;
-//    fileInfoHeader.biBlueMask = 0;
-//
-//    if (fileInfoHeader.biSize >= 52) {
-//        read(fileStream, fileInfoHeader.biRedMask, sizeof(fileInfoHeader.biRedMask));
-//        read(fileStream, fileInfoHeader.biGreenMask, sizeof(fileInfoHeader.biGreenMask));
-//        read(fileStream, fileInfoHeader.biBlueMask, sizeof(fileInfoHeader.biBlueMask));
-//    }
-//
-//    // если маска не задана, то ставим маску по умолчанию
-//    if (fileInfoHeader.biRedMask == 0 || fileInfoHeader.biGreenMask == 0 || fileInfoHeader.biBlueMask == 0) {
-//        fileInfoHeader.biRedMask = maskValue << (bitsOnColor * 2);
-//        fileInfoHeader.biGreenMask = maskValue << bitsOnColor;
-//        fileInfoHeader.biBlueMask = maskValue;
-//    }
-//
-//    // bmp v3
-//    if (fileInfoHeader.biSize >= 56) {
-//        read(fileStream, fileInfoHeader.biAlphaMask, sizeof(fileInfoHeader.biAlphaMask));
-//    } else {
-//        fileInfoHeader.biAlphaMask = maskValue << (bitsOnColor * 3);
-//    }
-//
-//    // bmp v4
-//    if (fileInfoHeader.biSize >= 108) {
-//        read(fileStream, fileInfoHeader.biCSType, sizeof(fileInfoHeader.biCSType));
-//        read(fileStream, fileInfoHeader.biEndpoints, sizeof(fileInfoHeader.biEndpoints));
-//        read(fileStream, fileInfoHeader.biGammaRed, sizeof(fileInfoHeader.biGammaRed));
-//        read(fileStream, fileInfoHeader.biGammaGreen, sizeof(fileInfoHeader.biGammaGreen));
-//        read(fileStream, fileInfoHeader.biGammaBlue, sizeof(fileInfoHeader.biGammaBlue));
-//    }
-//
-//    // bmp v5
-//    if (fileInfoHeader.biSize >= 124) {
-//        read(fileStream, fileInfoHeader.biIntent, sizeof(fileInfoHeader.biIntent));
-//        read(fileStream, fileInfoHeader.biProfileData, sizeof(fileInfoHeader.biProfileData));
-//        read(fileStream, fileInfoHeader.biProfileSize, sizeof(fileInfoHeader.biProfileSize));
-//        read(fileStream, fileInfoHeader.biReserved, sizeof(fileInfoHeader.biReserved));
-//    }
-//
-//    // проверка на поддерку этой версии формата
-//    if (fileInfoHeader.biSize != 12 && fileInfoHeader.biSize != 40 && fileInfoHeader.biSize != 52 &&
-//        fileInfoHeader.biSize != 56 && fileInfoHeader.biSize != 108 && fileInfoHeader.biSize != 124) {
-//        std::cout << "Error: Unsupported BMP format." << std::endl;
-//        return 0;
-//    }
-//
-//    if (fileInfoHeader.biBitCount != 16 && fileInfoHeader.biBitCount != 24 && fileInfoHeader.biBitCount != 32) {
-//        std::cout << "Error: Unsupported BMP bit count." << std::endl;
-//        return 0;
-//    }
-//
-//    if (fileInfoHeader.biCompression != 0 && fileInfoHeader.biCompression != 3) {
-//        std::cout << "Error: Unsupported BMP compression." << std::endl;
-//        return 0;
-//    }
-//
-//    // rgb info
-//    RGBQUAD **rgbInfo = new RGBQUAD *[fileInfoHeader.biHeight];
-//
-//    for (unsigned int i = 0; i < fileInfoHeader.biHeight; i++) {
-//        rgbInfo[i] = new RGBQUAD[fileInfoHeader.biWidth];
-//    }
-//
-//    // определение размера отступа в конце каждой строки
-//    int linePadding = ((fileInfoHeader.biWidth * (fileInfoHeader.biBitCount / 8)) % 4) & 3;
-//
-//    // чтение
-//    unsigned int bufer;
-//
-//    for (unsigned int i = 0; i < fileInfoHeader.biHeight; i++) {
-//        for (unsigned int j = 0; j < fileInfoHeader.biWidth; j++) {
-//            read(fileStream, bufer, fileInfoHeader.biBitCount / 8);
-//
-//            rgbInfo[i][j].rgbRed = bitextract(bufer, fileInfoHeader.biRedMask);
-//            rgbInfo[i][j].rgbGreen = bitextract(bufer, fileInfoHeader.biGreenMask);
-//            rgbInfo[i][j].rgbBlue = bitextract(bufer, fileInfoHeader.biBlueMask);
-//            rgbInfo[i][j].rgbReserved = bitextract(bufer, fileInfoHeader.biAlphaMask);
-//        }
-//        fileStream.seekg(linePadding, std::ios_base::cur);
-//    }
-//    int w, h, x0, y0;
-//    w = fileInfoHeader.biWidth;
-//    h = fileInfoHeader.biHeight;
-//    y0 = WinHei - h - 60; //400;
-//    x0 = WinWid - w;
-//    color_t c;
-//
-//    // вывод
-//
-//    // ============
-//    figure fig;
-//    p.x = x0 + cx;
-//    p.y = y0 + cy;
-//    fig.p.push_back(p);
-//    p.x = x0 + cx + w;
-//    p.y = y0 + cy + h;
-//    fig.p.push_back(p);
-//    ++id;
-//    fig.id = id;
-//    fig.center.x = (X0 + X0 + w) / 2.0 + cx;
-//    fig.center.y = (Y0 + Y0 + h) / 2.0 + cy;
-//    fig.name = "image";
-//    fig.fordel = false;
-//    fig.visible = true;
-//    fig.color = cAll;
-//    fig.thickness = 0;
-//
-//    fig.extrem = border_polyline(fig.p);
-//    fig.start_image = texture.size();
-//
-//    for (unsigned int i = 0; i < fileInfoHeader.biHeight; i++) {
-//        for (unsigned int j = 0; j < fileInfoHeader.biWidth; j++) {
-//            c.y = y0 + i + cy;
-//            c.x = j + x0 + cx;
-//            c.b = rgbInfo[i][j].rgbRed / 256.0;
-//            c.g = rgbInfo[i][j].rgbGreen / 256.0;
-//            c.r = rgbInfo[i][j].rgbBlue / 256.0;
-//            texture.push_back(c);
-//
-//        }
-//    }
-//    fig.end_image = texture.size();
-//    //Вигадуємо унікальне ім'я файлу
-//    std::string name = currentDateToString() + ".bmp";
-//    fig.file_image = name;
-//    figures.push_back(fig);
-//    // =============
-//
-//    if (fileName != "tmp/" + name) {
-//        std::cout << "Переміщаємо файл " << name << ".\n";
-//        int n;
-//        n = rename(fileName.c_str(), ("tmp/" + name).c_str());
-//    }
-//
-////    n = remove("file.bmp");
-//    return 1;
-//
-//}
-
 
 GLuint LoadTexture(char *FileName, int &w, int &h) {
 
