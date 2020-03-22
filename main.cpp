@@ -13,13 +13,19 @@
 //#include "rapidjson/writer.h"
 //#include "rapidjson/stringbuffer.h"
 #include <bits/stdc++.h>
+//#include <GLFW/glfw3.h>
+
 
 
 
 float WinWid = 800.0;
 float WinHei = 600.0;
 
-std::list<figure> figures;
+
+
+figures_t figures;
+
+std::list <figures_t> figures_list;
 
 
 int window;
@@ -71,6 +77,8 @@ float selRotateY = -11111111;
 border selDelBorder;
 border selCopyBorder;
 
+
+std::string directory;
 
 point p;
 figure fig;
@@ -523,7 +531,7 @@ void read_ini() {
 void init_flags() {
     system("mkdir tmp");
     system("mkdir lessons");
-    std::cout << currentDateToString() << std::endl;
+//    std::cout << currentDateToString() << std::endl;
     read_ini();
     std::ofstream fout("is_work.txt");
     fout << "Hello. I work!" << std::endl;
@@ -535,6 +543,8 @@ void init_flags() {
 void Initialize() {
     init_colors();
     init_flags();
+//    if (!glfwInit())
+//        exit(-1);
 
     init_buttons(WinWid, WinHei, cAll, figures);
     glClearColor(cAll.fonColorR, cAll.fonColorG, cAll.fonColorB, cAll.fonColorA);
@@ -589,10 +599,16 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
             command = "wmctrl -a Hello";
             system(command);
         } else if (t == -4) { //відкриваємо файл з диску
+            std::string command;
             char filename[1024];
-            FILE *f = popen("zenity --file-selection", "r");
+            command = "zenity --file-selection --filename=" + directory + "lessons/";
+            FILE *f = popen(command.c_str(), "r");
             fgets(filename, 1024, f);
-            printf(filename, "\n");
+//
+//            char filename[1024];
+//            FILE *f = popen("zenity --file-selection", "r");
+//            fgets(filename, 1024, f);
+//            printf(filename, "\n");
             load_file(filename);
         } else if (t == -5) { //прокрутка вниз
             cy -= 100;
@@ -832,10 +848,13 @@ void on_keypress(unsigned char key, int x, int y) {
         case 108:   //L
             std::string command;
             char filename[1024];
-            FILE *f = popen("zenity --file-selection", "r");
+            command = "zenity --file-selection --filename=" + directory + "lessons/";
+            FILE *f = popen(command.c_str(), "r");
             fgets(filename, 1024, f);
-            //load_file(filename);
             break;
+//        case 22:   //ctrl + v
+//            printf("\n");
+//            break;
     }
 }
 
@@ -921,6 +940,11 @@ void on_exit() {
 }
 
 int main(int argc, char **argv) {
+//    std::cout<<"dir - "<<argv[0]<<std::endl;
+
+    std::string s = argv[0];
+    directory = left_symR(s,'/');
+    std::cout<<"dir - "<<directory<<std::endl;
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
     WinWid = glutGet(GLUT_SCREEN_WIDTH);

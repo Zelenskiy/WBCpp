@@ -121,9 +121,9 @@ void draw_line_for_preview(float XX0, float YY0, float XX, float YY, int thin, c
 }
 
 
-std::string button_name[BUTTONS_COUNT] = {"ar", "hand", "pen", "er", "line", "minimize", "close", "options", "open", "undo"};
-int button_index[BUTTONS_COUNT] = {8, 20, 1, 2, 3, -1, -2, -3, -4, -6};
-int button_visible[BUTTONS_COUNT] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+std::string button_name[BUTTONS_COUNT] = {"ar", "hand", "pen", "er", "line", "minimize", "close", "options", "open", "undo","paste"};
+int button_index[BUTTONS_COUNT] = {8, 20, 1, 2, 3, -1, -2, -3, -4, -6, -7};
+int button_visible[BUTTONS_COUNT] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,1};
 
 //float dist(float x0, float y0, float x, float y){
 //    return max(x-x0,y-y0);
@@ -410,6 +410,18 @@ std::string left_sym(std::string s, std::string subs) {
     }
     return "";
 }
+
+std::string left_symR(std::string s, char subs) {
+    for (int i=s.size()-1;i>-1;i--){
+        if (s[i] == subs){
+            s = s.substr(0, i+1);
+            return s;
+        }
+    }
+    return "";
+
+}
+
 
 void draw_grid(int w, int h) {
     glEnable(GL_LINE_STIPPLE);

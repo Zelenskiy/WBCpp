@@ -72,80 +72,7 @@ typedef struct figure {
     bool select = false;
 } _figure;
 
-
-// ================
-// CIEXYZTRIPLE stuff
-typedef int FXPT2DOT30;
-
-typedef struct {
-    FXPT2DOT30 ciexyzX;
-    FXPT2DOT30 ciexyzY;
-    FXPT2DOT30 ciexyzZ;
-} CIEXYZ;
-
-typedef struct {
-    CIEXYZ ciexyzRed;
-    CIEXYZ ciexyzGreen;
-    CIEXYZ ciexyzBlue;
-} CIEXYZTRIPLE;
-
-// bitmap file header
-typedef struct {
-    unsigned short bfType;
-    unsigned int bfSize;
-    unsigned short bfReserved1;
-    unsigned short bfReserved2;
-    unsigned int bfOffBits;
-} BITMAPFILEHEADER;
-
-// bitmap info header
-typedef struct {
-    unsigned int biSize;
-    unsigned int biWidth;
-    unsigned int biHeight;
-    unsigned short biPlanes;
-    unsigned short biBitCount;
-    unsigned int biCompression;
-    unsigned int biSizeImage;
-    unsigned int biXPelsPerMeter;
-    unsigned int biYPelsPerMeter;
-    unsigned int biClrUsed;
-    unsigned int biClrImportant;
-    unsigned int biRedMask;
-    unsigned int biGreenMask;
-    unsigned int biBlueMask;
-    unsigned int biAlphaMask;
-    unsigned int biCSType;
-    CIEXYZTRIPLE biEndpoints;
-    unsigned int biGammaRed;
-    unsigned int biGammaGreen;
-    unsigned int biGammaBlue;
-    unsigned int biIntent;
-    unsigned int biProfileData;
-    unsigned int biProfileSize;
-    unsigned int biReserved;
-} BITMAPINFOHEADER;
-
-// rgb quad
-typedef struct {
-    unsigned char rgbBlue;
-    unsigned char rgbGreen;
-    unsigned char rgbRed;
-    unsigned char rgbReserved;
-} RGBQUAD;
-
-// read bytes
-
-
-//void read(std::ifstream &fp, Type &result, std::size_t size) {
-//    fp.read(reinterpret_cast<char *>(&result), size);
-//}
-
-// bit extract
-unsigned char bitextract(const unsigned int byte, const unsigned int mask);
-
-
-// ================
+typedef std::list<figure> figures_t;
 
 
 
@@ -172,6 +99,8 @@ void draw_buttons(float w, float h, colorAll cAll, std::list<figure> figures) ;
 void draw_rectangle_fill(float x0, float y0, float x, float y, float r, float g, float b);
 
 void draw_line_for_preview(float XX0, float YY0, float XX, float YY, int thin, colorAll cAll);
+
+std::string left_symR(std::string s, char subs);
 
 
 //void draw_pictures(float x0,float y0);
