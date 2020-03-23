@@ -122,12 +122,11 @@ void draw_line_for_preview(float XX0, float YY0, float XX, float YY, int thin, c
 
 
 std::string button_name[BUTTONS_COUNT] = {"ar", "hand", "pen", "er", "line", "minimize", "close", "options", "open", "undo","paste"};
-int button_index[BUTTONS_COUNT] = {8, 20, 1, 2, 3, -1, -2, -3, -4, -6, -7};
+int button_posX[BUTTONS_COUNT] = {1, 0, 2, 3, 4, 6, 25, 7, 8, 9, 10};
+int button_tool[BUTTONS_COUNT] = {8, 20, 1, 2, 3, -1, -2, -3, -4, -6, -7};
 int button_visible[BUTTONS_COUNT] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,1};
 
-//float dist(float x0, float y0, float x, float y){
-//    return max(x-x0,y-y0);
-//}
+
 
 void draw_but(int i, float x0, float y0, colorAll cAll) {
     float r, g, b;
@@ -230,13 +229,22 @@ void draw_square(int x, int y, colorAll c) {
 
 void draw_buttons(float w, float h, colorAll cAll, std::list<figure> figures) {
     //Малюємо кнопки з малюнками
-    glBegin(GL_POINTS);
+
     for (int i = 0; i < BUTTONS_COUNT; i++) {
+        glBegin(GL_POINTS);
         if (button_visible[i] == 1)
             draw_but(i, buttons[i].x0, buttons[i].y0, cAll);
-
+        glEnd();
+        //Рамка навколо кнопок
+//        glColor3f(0.01, 0.42, 0.13);
+//        glBegin(GL_LINE_LOOP);
+//        glVertex2d(buttons[i].x0, buttons[i].y0);
+//        glVertex2d(buttons[i].x0, buttons[i].y0+ buttons[i].h);
+//        glVertex2d(buttons[i].x0+buttons[i].w, buttons[i].y0+ buttons[i].h);
+//        glVertex2d(buttons[i].x0+buttons[i].w, buttons[i].y0);
+//        glEnd();
     }
-    glEnd();
+
     //Малюємо кнопки без малюнків
     //Кнопки вибору кольру
     int btnColorCount = 5;
@@ -313,11 +321,11 @@ void draw_polygone(points ps, colorAll cAll, bool fill, float thin) {
 void init_buttons(float w, float h, colorAll cAll, std::list<figure> figures) {
     float k = 4;
     for (int i = 0; i < BUTTONS_COUNT; i++) {
-        buttons[i].tool = button_index[i];
-        buttons[i].x0 = k;
+        buttons[i].tool = button_tool[i];
         buttons[i].y0 = 4;
         buttons[i].w = 32;
         buttons[i].h = 32;
+        buttons[i].x0 = 4 + button_posX[i] * (buttons[i].w + 2);
         buttons[i].align = "left";
         buttons[i].name = button_name[i];
         k += 36;

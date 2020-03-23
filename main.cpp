@@ -80,6 +80,8 @@ border selCopyBorder;
 
 std::string directory;
 
+int ind_for_undo = 0;
+
 point p;
 figure fig;
 bool isResize = false;
@@ -356,6 +358,16 @@ void Draw() {
 
 
 void draw_to_figures(int XX0, int YY0, int XX, int YY, colorAll cAll, float thin) {
+    if (tool != 1){
+        figures_list.push_back(figures);
+        ind_for_undo = 0;
+    }  else {
+        if (ind_for_undo == 0){
+            figures_list.push_back(figures);
+            ind_for_undo = 10;
+        }
+        ind_for_undo--;
+    }
     point p;
     figure fig;
     p.x = XX0 + cx;
@@ -571,6 +583,8 @@ bool is_on_bullon_on_delete_select(float x, float y){
 }
 
 void on_mouse_down_up(int button, int state, int ax, int ay) {
+
+
     if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN) && (is_on_bullon_on_delete_select(ax, m_s(ay))==1)){
         printf("DELLLLL\n");
         for (auto &f: figures){
@@ -604,15 +618,16 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
             command = "zenity --file-selection --filename=" + directory + "lessons/";
             FILE *f = popen(command.c_str(), "r");
             fgets(filename, 1024, f);
-//
-//            char filename[1024];
-//            FILE *f = popen("zenity --file-selection", "r");
-//            fgets(filename, 1024, f);
-//            printf(filename, "\n");
             load_file(filename);
         } else if (t == -5) { //прокрутка вниз
             cy -= 100;
             figures_is_visible();
+        } else if (t == -6) { // undo
+            if (figures_list.size()>0){
+                figures = figures_list.back();
+                figures_list.pop_back();
+            }
+
         } else if (t < -10) { //Вибираємо колір
             t *= -1;
             cAll.colorR = tmpColorAll.colorR;
@@ -625,6 +640,8 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
         // -------------------------
 
         if (button == GLUT_LEFT_BUTTON) {
+
+            std::cout<<"depth stack "<<figures_list.size()<<std::endl;
             isResize = false;
             old_X0 = 0;
             old_Y0 = 0;
@@ -707,6 +724,7 @@ void on_mouse_down_up(int button, int state, int ax, int ay) {
             cy -= 1;
 
         }
+
         figures_is_visible();
         glutPostRedisplay();
     }
@@ -974,6 +992,7 @@ int main(int argc, char **argv) {
 }
 
 int insert_screenshot(std::string fileName, float x0, float y0, float x, float y) {
+    figures_list.push_back(figures);
     char *cfileName = const_cast<char *>(fileName.c_str());
     int w = 0;
     int h = 0;
